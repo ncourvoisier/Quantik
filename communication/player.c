@@ -26,9 +26,37 @@ int connectionIA(int port) {
 		return -3;
 	}
 
-  return sockServ;
+  return sockTrans;
 }
 
+int sendIA(int ent, int sockIA) {
+	int err = 0;
+	ent = htonl(ent);
+	err = send(sockIA, &ent, sizeof(int),0);
+	if (err <= 0) {
+		perror("(player) send error with the IA request\n");
+		shutdown(sockIA, SHUT_RDWR); close(sockIA);
+		return -1;
+	}
+  ent = ntohl(ent);
+  return 0;
+}
+
+int recvIA(int sockIA) {
+	 	int entres;
+    int err = 0;
+    while (err < 4) {
+        err = recv(sockIA, &entres, sizeof(int),MSG_PEEK);
+    }
+    err = recv(sockIA, &entres, sizeof(int),0);
+    if (err <= 0) {
+        perror("(player) recv error with the IA response\n");
+        shutdown(sockIA, SHUT_RDWR); close(sockIA);
+        return -1;
+    }
+    int res = ntohl(entres);
+    return res;
+}
 
 
 int main (int argc, char** argv) {
@@ -109,59 +137,25 @@ int main (int argc, char** argv) {
 
 
     printf("The game is starded :\n");
-    //int sockIA  = connectionIA(portIA);
-    
-    struct sockaddr_in addClient;
-  	int	sizeAddr;
-    
-    int sockServIA = socketServeur(portIA);
-		if (sockServIA < 0){
-			printf("Erreur sur socket serveur\n");
-			return -2;
-		}
-
-		sizeAddr = sizeof(struct sockaddr_in);
-		printf("Attente de connexion de l'IA");
-		int sockIA = accept(sockServIA, (struct sockaddr *)&addClient, (socklen_t *)&sizeAddr);
-		if (sockIA < 0) {
-			perror("(serveurTCP) erreur sur accept");
-			return -3;
-		}
-
-    
-
+    int sockIA  = connectionIA(portIA); // Connexion a l'IA
+      
+    // Envoie au java
     int ent = 12;
-    ent = htonl(ent);
-    err = send(sockIA, &ent, sizeof(int),0);
-    if (err <= 0) {
-        perror("(player) send error with the IA request\n");
-        shutdown(sockIA, SHUT_RDWR); close(sockIA);
-        return -3;
-    }
-    ent = ntohl(ent);
-    
-    
-    int entres;
-    err = 0;
-    while (err < 4) {
-        err = recv(sockIA, &entres, sizeof(int),MSG_PEEK);
-    }
-    err = recv(sockIA, &entres, sizeof(int),0);
-    if (err <= 0) {
-        perror("(player) recv error with the IA response\n");
-        shutdown(sockIA, SHUT_RDWR); close(sockIA);
-        return -4;
+    err = sendIA(ent, sockIA);
+    if (err == -1) {
+    	return -1;
     }
     
-    int errs = ntohl(entres);
-
-    printf("\n RECU DU JAVA : %d", errs);
-
-
-
+    // Reception du java
+    int recu = recvIA(sockIA);
+    if (recu == -1) {
+    	return -1;
+    }
+    
+   
+    printf("\nRECU DU JAVA : %d\n", recu);
 
     shutdown(sock, SHUT_RDWR); close(sock);
-    printf("\n\nSalut");
     return 0;
 }
 

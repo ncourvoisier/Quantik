@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class EngineIA {
+
 	public static void main (String[] args) {
 
 		int port = 0;
@@ -28,8 +29,6 @@ public class EngineIA {
 				System.out.println("RECU " + result);
 				DOS.writeInt(arret);
 				
-				//result = DIS.readInt();
-				//System.out.println("RECU " + result);
 				
 				DIS.close();
 				DOS.close();
