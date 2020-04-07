@@ -6,9 +6,9 @@ import org.jpl7.Term;
 import org.jpl7.Variable;
 
 
-public class App {
+public class Prolog {
 
-    App() {
+    Prolog() {
 
     }
 

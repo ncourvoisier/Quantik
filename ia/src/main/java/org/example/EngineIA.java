@@ -6,14 +6,15 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
 
-public class Engine {
+
+public class EngineIA {
 
     public static void main (String[] args) {
 
         int port = 2567;
         String addr = "127.0.0.1";
 
-        App a = new App();
+        Prolog p = new Prolog();
 
         //if(args.length != 2) {
         //    System.out.println("Usage : adresse port");
@@ -21,21 +22,20 @@ public class Engine {
         //addr = args[0];
         //port = Integer.parseInt(args[1]);
 
-        Query consult = App.consult();
-        int res = a.random();
+        Query consult = Prolog.consult();
+        int res = p.random();
         System.out.println("Le resultat duprolog : " + res);
 
-        /*try{
+        try{
             Socket sock = new Socket(addr,port);
             DataInputStream DIS = new DataInputStream(sock.getInputStream());
             DataOutputStream DOS = new DataOutputStream(sock.getOutputStream());
 
-            int arret = 6;
             int result = 0;
 
             result = DIS.readInt();
             System.out.println("RECU " + result);
-            DOS.writeInt(arret);
+            DOS.writeInt(res);
 
 
             DIS.close();
@@ -43,8 +43,7 @@ public class Engine {
             sock.close();
         } catch (Exception e) {
             e.printStackTrace();
-        }*/
-
+        }
 
 
 

@@ -3,7 +3,7 @@
 #include "protocolQuantik.h"
 
 void printHelp(char* name) {
-    printf("usage : %s IPserver port name color(W/B)\n", name);
+    printf("usage : %s IPserver port name color(W/B) portIA\n", name);
 }
 
 int connectionIA(int port) {
