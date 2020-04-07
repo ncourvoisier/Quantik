@@ -1,3 +1,6 @@
+#ifndef _SOCKLIB_H
+#define _SOCKLIB_H
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,3 +15,5 @@
 
 int socketServeur(ushort nPort);
 int socketClient(char* nomMachine, ushort nPort);
+
+#endif
