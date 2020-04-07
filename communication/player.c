@@ -229,13 +229,13 @@ int main (int argc, char** argv) {
     	return -1;
     }  */
     
-    int x = 1;
-    int y = 2;
+    int x = 0;
+    int y = 0;
     int p = 1;
     
     TPion tpion = pionToTPion(p, gameRequest.coulPion);
     TCase tcase = positionToTCase(x, y);
-		TPropCoup propCoup;
+		TPropCoup propCoup = CONT;
 		bool estBloque = false;
     
     printf("[Ligne %d colonne %d Pion %d Couleur %d]\n",tcase.l, tcase.c, tpion.typePion, tpion.coulPion);
