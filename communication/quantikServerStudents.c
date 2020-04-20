@@ -2,15 +2,72 @@
 #include "validation.h"
 #include "protocolQuantik.h"
 
+
+/*
+    Structures definition
+*/
 typedef struct {
     char* name;
     int socket;
     TCoul color;
 } PlayerData;
 
+
+/*
+    Global parameters
+*/
+int debugMode = 0;
+int noValid = 0;
+int noTimeout = 0;
+int port = -1;
+
+
+void printUsage(char* execName) {
+    printf("Usage: %s [--noValid|--noTimeout|--debug] no_port\n", execName);
+}
+
+
+int parsingParameters(int argc, char** argv) {
+    if (argc < 2) {
+        printf("Error: too few parameters\n");
+        printUsage(argv[0]);
+        return 1;
+    }
+    for (int i = 1; i < argc - 1; i++) {
+        if (strcmp(argv[i], "--noValid") == 0) {
+            noValid = 1;
+        }
+        else if (strcmp(argv[i], "--noTimeout") == 0) {
+            noTimeout = 1;
+        }
+        else if (strcmp(argv[i], "--debug") == 0) {
+            debugMode = 1;
+        }
+        else {
+            printf("Error: unknown argument '%s'\n", argv[i]);
+            printUsage(argv[0]);
+            return 1;
+        }
+    }
+    port = atoi(argv[argc - 1]);
+    return 0;
+}
+
+
+/*
+    See usage of 'sprintf' to pass formatted strings as parameter
+*/
+void debugLog(char* msg) {
+    if (debugMode) {
+        printf("%s\n", msg);
+    }
+}
+
+
 PlayerData initPlayerData(int sock) {
     return (PlayerData) { NULL, sock, -1 }; // TODO : check the -1 for the enum
 }
+
 
 int handlePlayerConnection(int socketServer, PlayerData players[]) {
 
@@ -42,13 +99,11 @@ int handlePlayerConnection(int socketServer, PlayerData players[]) {
 
 }
 
+
 int handlePlayerAction(PlayerData player) {
     printf("Hello player");
 }
 
-void printUsage(char* execName) {
-    printf("Usage: %s [--noValid|--noTimeout] no_port\n", execName);
-}
 
 int main(int argc, char** argv) {
 
@@ -56,8 +111,7 @@ int main(int argc, char** argv) {
         Server initializing part
     */
 
-    int port,
-        err,
+    int err,
         socketServer;
 
     PlayerData players[2];
@@ -67,15 +121,14 @@ int main(int argc, char** argv) {
 
     fd_set readfs;
 
-    if (argc != 2) {
-        printUsage(argv[0]);
+    err = parsingParameters(argc, argv);
+    if (err == 1) {
         exit(1);
     }
 
-    port = atoi(argv[1]);
     socketServer = socketServeur(port);
     if (socketServer < 0) {
-        printf("[QuantikServer] Error occured while initializing server on port %i.", port);
+        printf("[QuantikServer] Error occured while initializing server on port %i.\n", port);
         exit(2);
     }
 
@@ -113,6 +166,5 @@ int main(int argc, char** argv) {
         }
 
     }
-
 
 }
