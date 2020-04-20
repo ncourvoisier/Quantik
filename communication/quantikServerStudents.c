@@ -6,20 +6,28 @@
 /*
     Structures definition
 */
-typedef struct {
-    char* name;
+typedef struct PlayerData {
+    struct PlayerData *opponent;
+    char name[T_NOM];
     int socket;
     TCoul color;
+    int ready;
 } PlayerData;
 
 
 /*
     Global parameters
 */
-int debugMode = 0;
-int noValid = 0;
-int noTimeout = 0;
+int debug = 0;
+int valid = 1;
+int timeout = 1;
 int port = -1;
+
+
+/*
+    Game datas
+*/
+PlayerData players[2];
 
 
 void printUsage(char* execName) {
@@ -35,13 +43,13 @@ int parsingParameters(int argc, char** argv) {
     }
     for (int i = 1; i < argc - 1; i++) {
         if (strcmp(argv[i], "--noValid") == 0) {
-            noValid = 1;
+            valid = 0;
         }
         else if (strcmp(argv[i], "--noTimeout") == 0) {
-            noTimeout = 1;
+            timeout = 0;
         }
         else if (strcmp(argv[i], "--debug") == 0) {
-            debugMode = 1;
+            debug = 1;
         }
         else {
             printf("Error: unknown argument '%s'\n", argv[i]);
@@ -58,19 +66,23 @@ int parsingParameters(int argc, char** argv) {
     See usage of 'sprintf' to pass formatted strings as parameter
 */
 void debugLog(char* msg) {
-    if (debugMode) {
-        printf("%s\n", msg);
+    if (debug) {
+        printf("[debug] %s\n", msg);
     }
 }
 
 
-PlayerData initPlayerData(int sock) {
-    return (PlayerData) { NULL, sock, -1 }; // TODO : check the -1 for the enum
+void initPlayers() {
+    for (int i = 0; i < 2; i++) {
+        players[i].socket = -1;
+        players[i].ready = 0;
+    }
+    players[0].opponent = &players[1];
+    players[1].opponent = &players[0];
 }
 
 
 int handlePlayerConnection(int socketServer, PlayerData players[]) {
-
     int newPlayer;
     if (players[0].socket == -1) {
         newPlayer = 0;
@@ -79,7 +91,7 @@ int handlePlayerConnection(int socketServer, PlayerData players[]) {
         newPlayer = 1;
     }
     else {
-        return -1; // 2 players already playing
+        return -1;
     }
 
     int sizeAddr = sizeof(struct sockaddr_in);
@@ -93,20 +105,81 @@ int handlePlayerConnection(int socketServer, PlayerData players[]) {
         return -2;
     }
 
-    players[newPlayer] = initPlayerData(playerSock);
+    players[newPlayer].socket = playerSock;
 
     return 0;
-
 }
 
 
+/*
+    Called for game initialization requests.
+*/
+int handleGameRequest(PlayerData player) {
+    TPartieReq gameRequest;
+
+    int err = recv(player.socket, &gameRequest, sizeof(TPartieReq), 0);
+    if (err <= 0) {
+        printf("[QuantikServer] Error occured while receiving player request.");
+        return 1;
+    }
+
+    strcpy(player.name, gameRequest.nomJoueur);
+    if (player.opponent->ready && player.opponent->color == gameRequest.coulPion) {
+        if (gameRequest.coulPion == BLANC) {
+            player.color = NOIR;
+        }
+        else {
+            player.color = BLANC;
+        }
+    }
+    else {
+        player.color = gameRequest.coulPion;
+    }
+    player.ready = 1;
+}
+
+
+/*
+    Called for playing requests.
+*/
+int handlePlayingRequest(PlayerData player) {
+    TCoupReq playingRequest;
+
+    int err = recv(player.socket, &playingRequest, sizeof(TCoupReq), 0);
+    if (err <= 0) {
+        printf("[QuantikServer] Error occured while receiving player request.");
+        return 1;
+    }
+}
+
+
+/*
+    Called for every player action on his socket.
+*/
 int handlePlayerAction(PlayerData player) {
-    printf("Hello player");
+    TIdReq idRequest;
+
+    int err = recv(player.socket, &idRequest, sizeof(TIdReq), MSG_PEEK);
+    if (err <= 0) {
+        printf("[QuantikServer] Error occured while receiving player request.");
+        return 1;
+    }
+
+    if (idRequest == PARTIE) {
+        handleGameRequest(player);
+    }
+    else if (idRequest == COUP) {
+        handlePlayingRequest(player);
+    }
+    else {
+        // TODO
+    }
+
+    return 0;
 }
 
 
 int main(int argc, char** argv) {
-
     /*
         Server initializing part
     */
@@ -114,10 +187,7 @@ int main(int argc, char** argv) {
     int err,
         socketServer;
 
-    PlayerData players[2];
-    for (int i = 0; i < 2; i++) {
-        players[i] = initPlayerData(-1);
-    }
+    initPlayers();
 
     fd_set readfs;
 
@@ -137,7 +207,6 @@ int main(int argc, char** argv) {
     */
 
     for (;;) {
-
         FD_ZERO(&readfs);
         FD_SET(socketServer, &readfs);
 
@@ -164,7 +233,5 @@ int main(int argc, char** argv) {
                 }
             }
         }
-
     }
-
 }
