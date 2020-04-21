@@ -11,6 +11,7 @@ typedef struct PlayerData {
     char name[T_NOM];
     int socket;
     TCoul color;
+    TValidCoul colorAccepted;
     int ready;
 } PlayerData;
 
@@ -28,6 +29,7 @@ int port = -1;
     Game datas
 */
 PlayerData players[2];
+int gameStarted = 0;
 
 
 void printUsage(char* execName) {
@@ -82,6 +84,40 @@ void initPlayers() {
 }
 
 
+/*
+    Send a game initialization response to the player.
+    -> use ERR_OK value for code when both players are ready.
+    -> use ERR_PARTIE or ERR_TYP to warn the player that his attempt is invalid.
+*/
+int sendGameResponse(PlayerData player, TCodeRep code) {
+    TPartieRep gameResponse;
+    gameResponse.err = code;
+    if (code == ERR_OK) {
+        strcpy(gameResponse.nomAdvers, player.opponent->name);
+        gameResponse.validCoulPion = player.colorAccepted;
+    }
+    int err = send(player.socket, &gameResponse, sizeof(TPartieRep), 0);
+    if (err <= 0) {
+        return 1;
+        // TODO
+    }
+}
+
+
+int sendPlayingResponse(PlayerData player, TCodeRep code) {
+    // TODO
+}
+
+
+void launchGame() {
+    for (int i = 0; i < 2; i++) {
+        sendGameResponse(players[i], ERR_OK); // TODO test ret
+    }
+    gameStarted = 1;
+    // Game initializing ...
+}
+
+
 int handlePlayerConnection(int socketServer, PlayerData players[]) {
     int newPlayer;
     if (players[0].socket == -1) {
@@ -113,6 +149,9 @@ int handlePlayerConnection(int socketServer, PlayerData players[]) {
 
 /*
     Called for game initialization requests.
+    Error code:
+    1 -> invalid request type
+    2 -> name already used
 */
 int handleGameRequest(PlayerData player) {
     TPartieReq gameRequest;
@@ -123,8 +162,13 @@ int handleGameRequest(PlayerData player) {
         return 1;
     }
 
+    if (strcmp(gameRequest.nomJoueur, player.opponent->name) == 0) {
+        return 2;
+    }
+
     strcpy(player.name, gameRequest.nomJoueur);
     if (player.opponent->ready && player.opponent->color == gameRequest.coulPion) {
+        player.colorAccepted = KO;
         if (gameRequest.coulPion == BLANC) {
             player.color = NOIR;
         }
@@ -133,9 +177,15 @@ int handleGameRequest(PlayerData player) {
         }
     }
     else {
+        player.colorAccepted = OK;
         player.color = gameRequest.coulPion;
     }
+
     player.ready = 1;
+
+    if (player.opponent->ready) {
+        launchGame();
+    }
 }
 
 
@@ -158,21 +208,45 @@ int handlePlayingRequest(PlayerData player) {
 */
 int handlePlayerAction(PlayerData player) {
     TIdReq idRequest;
+    TCodeRep errorCode;
 
     int err = recv(player.socket, &idRequest, sizeof(TIdReq), MSG_PEEK);
     if (err <= 0) {
         printf("[QuantikServer] Error occured while receiving player request.");
-        return 1;
-    }
-
-    if (idRequest == PARTIE) {
-        handleGameRequest(player);
-    }
-    else if (idRequest == COUP) {
-        handlePlayingRequest(player);
+        errorCode = ERR_TYP;
     }
     else {
-        // TODO
+        if (idRequest == PARTIE) {
+            if (gameStarted) {
+                errorCode = ERR_TYP;
+            }
+            else {
+                err = handleGameRequest(player);
+                if (err == 0) {
+                    return 0;
+                }
+                else if (err == 1) {
+                    errorCode = ERR_TYP;
+                }
+                else if (err == 2) {
+                    errorCode = ERR_PARTIE;
+                }
+            }
+        }
+        else if (idRequest == COUP) {
+            handlePlayingRequest(player);
+            // Return ...
+        }
+        else {
+            errorCode = ERR_TYP;
+        }
+    }
+
+    if (gameStarted) {
+        sendPlayingResponse(player, errorCode);
+    }
+    else {
+        sendGameResponse(player, errorCode);
     }
 
     return 0;
