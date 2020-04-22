@@ -7,6 +7,47 @@ void printHelp(char* name) {
 }
 
 
+int ligneToInt(TLg l) {
+	switch(l) {
+		case UN :
+			return 1;
+		case DEUX :
+			return 2;
+		case TROIS :
+			return 3;
+		default :
+			return 4;
+	}
+}
+
+int colonneToInt(TCol c) {
+	switch(c) {
+		case A :
+			return 1;
+		case B :
+			return 2;
+		case C :
+			return 3;
+		default :
+			return 4;
+	}
+}
+
+int pionToInt(TTypePion p) {
+	switch(p) {
+		case CYLINDRE :
+			return 1;
+		case PAVE :
+			return 2;
+		case SPHERE :
+			return 3;
+		default :
+			return 4;
+	}
+}
+
+
+
 TLg intToLigne(int x) {
 	switch(x) {
         case 0 : 
@@ -43,6 +84,19 @@ TTypePion intToPion(int p) {
             return SPHERE;
         default :
             return TETRAEDRE;
+    } 
+}
+
+TPropCoup intToProprieteCoup(int c) {
+	switch(c) {
+        case 0 : 
+            return CONT;
+        case 1 :
+            return GAGNE;
+        case 2 :
+            return NUL;
+        default :
+            return PERDU;
     } 
 }
 
@@ -206,9 +260,9 @@ int main (int argc, char** argv) {
         }
     } else {
        if (gameRequest.coulPion == BLANC) {
-            printf("You will play with white (%d).\n",gameRequest.coulPion);
+            printf("You will play with white and you start(%d).\n",gameRequest.coulPion);
         } else {
-            printf("You will play with black (%d).\n",gameRequest.coulPion);
+            printf("You will play with black and white start(%d).\n",gameRequest.coulPion);
         }
     }
 
@@ -231,62 +285,174 @@ int main (int argc, char** argv) {
     
     int x = 0;
     int y = 0;
-    int p = 1;
+    int p = 0;
+    int c = 0;
     
-    TPion tpion = pionToTPion(p, gameRequest.coulPion);
-    TCase tcase = positionToTCase(x, y);
-		TPropCoup propCoup = CONT;
-		bool estBloque = false;
-    
-    printf("[Ligne %d colonne %d Pion %d Couleur %d]\n",tcase.l, tcase.c, tpion.typePion, tpion.coulPion);
-    TCoupReq coupReq = requeteCoup(COUP, 1, estBloque, tpion, tcase, propCoup);
-    TCoupRep coupResponse;
-   	
-   	err = send(sock, &coupReq, sizeof(TCoupReq),0);
-    if (err <= 0) {
-        perror("(player) send error during the last try\n");
-        shutdown(sock, SHUT_RDWR); close(sock);
-        return -4;
-    }
-   
-   	printf("Waiting the player to play...\n");
+    int end = 0;
+    do {
+		  
+		  if (gameRequest.coulPion == NOIR) {
+		  	TCoupReq coupRepAdversaire;
+				err = 0;
+				err = recv(sock, &coupRepAdversaire, sizeof(TCoupReq),0);
+				if (err <= 0) {
+				    perror("(player) recv error with the adversaire response\n");
+				    shutdown(sock, SHUT_RDWR); close(sock);
+				    return -5;
+				}
+				int xa = ligneToInt(coupRepAdversaire.posPion.l);
+				int ya = colonneToInt(coupRepAdversaire.posPion.c);
+				int pa = pionToInt(coupRepAdversaire.pion.typePion);
+				int ca = coupRepAdversaire.propCoup;
+				printf("\nCASE JOUE ADVERSAIRE + PION : %d %d %d %d\n", xa, ya, pa, ca);
+		  }
+		  
+		  printf("Choisir x (0,1,2,3) :\n");
+		  scanf("%d", &x);
+		  printf("Choisir y (0,1,2,3) :\n");
+		  scanf("%d", &y);
+		  printf("Choisir p (0,1,2,3) :\n");
+		  scanf("%d", &p);
+		  printf("Propirete coup (0,1,2,3) : \n");
+		  scanf("%d", &c);
+		  
+		  
+		  printf("Vous avez choisi la coordonnée (%d,%d), avec le pion %d et la propriete %d.\n", x,y,p,c);
+		  
+		  TPion tpion = pionToTPion(p, gameRequest.coulPion);
+		  TCase tcase = positionToTCase(x, y);
+			TPropCoup propCoup = intToProprieteCoup(c);
+			bool estBloque = false;
+		  
+		  printf("[Ligne %d colonne %d Pion %d Couleur %d]\n",tcase.l, tcase.c, tpion.typePion, tpion.coulPion);
+		  TCoupReq coupReq = requeteCoup(COUP, 1, estBloque, tpion, tcase, propCoup);
+		  TCoupRep coupResponse;
+		 	
+		 	err = send(sock, &coupReq, sizeof(TCoupReq),0);
+		  if (err <= 0) {
+		      perror("(player) send error during the last try\n");
+		      shutdown(sock, SHUT_RDWR); close(sock);
+		      return -4;
+		  }
+		 
+		 	printf("Waiting the player to play...\n");
 
-    err = recv(sock, &coupResponse, sizeof(TCoupRep),0);
-    if (err <= 0) {
-        perror("(player) recv error with the game response\n");
-        shutdown(sock, SHUT_RDWR); close(sock);
-        return -5;
-    }
-    
-    switch(coupResponse.err) {
-    	case ERR_OK :
-          break;
-      case ERR_PARTIE :
-          printf("Couldn't log into the game, invalid move\n");
-          break;
-      case ERR_TYP :
-          printf("Couldn't log into the game, move\n");
-          break;
-      default :
-          printf("default\n");
-    }
-    
-    switch(coupResponse.validCoup) {
-    	case VALID : 
-          printf("Your move is valid\n");
-          break;
-      case TIMEOUT :
-          printf("Your move isn't valid, you are over time to play.\n");
-          break;
-      case TRICHE :
-          printf("Your move isn't valid, CHEATER\n");
-          break;
-      default :
-          printf("default\n");
-    }
-    
+		  err = recv(sock, &coupResponse, sizeof(TCoupRep),0);
+		  if (err <= 0) {
+		      perror("(player) recv error with the game response\n");
+		      shutdown(sock, SHUT_RDWR); close(sock);
+		      return -5;
+		  }
+		  
+		  switch(coupResponse.err) {
+		  	case ERR_OK :
+		        break;
+		    case ERR_PARTIE :
+		        printf("Couldn't log into the game, invalid move\n");
+		        break;
+		    case ERR_TYP :
+		        printf("Couldn't log into the game, move\n");
+		        break;
+		    default :
+		        printf("default\n");
+		  }
+		  
+		  switch(coupResponse.validCoup) {
+		  	case VALID : 
+		        printf("Your move is valid\n");
+		        break;
+		    case TIMEOUT :
+		        printf("Your move isn't valid, you are over time to play.\n");
+		        //end = 1;
+		        break;
+		    case TRICHE :
+		        printf("Your move isn't valid, CHEATER\n");
+		        //end = 1;
+		        break;
+		    default :
+		        printf("default\n");
+		  }
+		  
+		  
+		  if (gameRequest.coulPion == BLANC) {
+				TCoupReq coupRepAdversaire;
+				err = 0;
+				err = recv(sock, &coupRepAdversaire, sizeof(TCoupReq),0);
+				if (err <= 0) {
+				    perror("(player) recv error with the adversaire response\n");
+				    shutdown(sock, SHUT_RDWR); close(sock);
+				    return -5;
+				}
+				
+				
+				int xa = ligneToInt(coupRepAdversaire.posPion.l);
+				int ya = colonneToInt(coupRepAdversaire.posPion.c);
+				int pa = pionToInt(coupRepAdversaire.pion.typePion);
+				int ca = coupRepAdversaire.propCoup;
+				
+				
+				printf("\nCASE JOUE ADVERSAIRE + PION : %d %d %d %d\n", xa, ya, pa, ca);
+		  
+		  	if (coupRepAdversaire.propCoup != CONT) {
+		  		switch (coupRepAdversaire.propCoup) {
+		  			case GAGNE:
+		  				printf("The player %s won, congratulations\n", gameResponse.nomAdvers);
+		  				break;
+		  			case NUL:
+		  				printf("Match nul against %s, noob\n", gameResponse.nomAdvers);
+		  				break;
+		  			case PERDU:
+		  				printf("YOU LOOSE against %s, go make a better ia\n", gameResponse.nomAdvers);
+		  				break;
+		  			default :
+		  				printf("Default\n");
+		  		}
+		  		end = 1;
+		  	}
+		  
+		  }
+
+		} while (end != 1);
 
     shutdown(sock, SHUT_RDWR); close(sock);
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
