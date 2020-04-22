@@ -2,6 +2,7 @@
 #include "validation.h"
 #include "protocolQuantik.h"
 
+#include <time.h>
 
 /*
     Structures definition
@@ -19,7 +20,6 @@ typedef struct PlayerData {
 /*
     Global parameters
 */
-int debug = 0;
 int valid = 1;
 int timeout = 1;
 int port = -1;
@@ -30,10 +30,11 @@ int port = -1;
 */
 PlayerData players[2];
 int gameStarted = 0;
+char logMessage[200];
 
 
 void printUsage(char* execName) {
-    printf("Usage: %s [--noValid|--noTimeout|--debug] no_port\n", execName);
+    printf("Usage: %s [--noValid|--noTimeout] no_port\n", execName);
 }
 
 
@@ -50,9 +51,6 @@ int parsingParameters(int argc, char** argv) {
         else if (strcmp(argv[i], "--noTimeout") == 0) {
             timeout = 0;
         }
-        else if (strcmp(argv[i], "--debug") == 0) {
-            debug = 1;
-        }
         else {
             printf("Error: unknown argument '%s'\n", argv[i]);
             printUsage(argv[0]);
@@ -67,10 +65,23 @@ int parsingParameters(int argc, char** argv) {
 /*
     See usage of 'sprintf' to pass formatted strings as parameter
 */
-void debugLog(char* msg) {
-    if (debug) {
-        printf("[debug] %s\n", msg);
+void printLog() {
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+    int h = t->tm_hour;
+    int m = t->tm_min;
+    int s = t->tm_sec;
+    char hc='\0', mc='\0', sc='\0';
+    if (h < 10) {
+        hc = '0';
     }
+    if (m < 10) {
+        mc = '0';
+    }
+    if (s < 10) {
+        sc = '0';
+    }
+    printf("[%c%i:%c%i:%c%i] %s\n", hc, h, mc, m, sc, s, logMessage);
 }
 
 
@@ -110,6 +121,7 @@ int sendPlayingResponse(PlayerData player, TCodeRep code) {
 
 
 void launchGame() {
+    sprintf(logMessage, "Starting the game"); printLog();
     for (int i = 0; i < 2; i++) {
         sendGameResponse(players[i], ERR_OK); // TODO test ret
     }
@@ -143,7 +155,9 @@ int handlePlayerConnection(int socketServer, PlayerData players[]) {
 
     players[newPlayer].socket = playerSock;
 
-    return 0;
+    sprintf(logMessage, "New connection on socket %i", playerSock); printLog();
+
+    return playerSock;
 }
 
 
@@ -183,6 +197,8 @@ int handleGameRequest(PlayerData player) {
 
     player.ready = 1;
 
+    sprintf(logMessage, "Player '%s' ready using color %i", player.name, player.color);
+
     if (player.opponent->ready) {
         launchGame();
     }
@@ -207,6 +223,7 @@ int handlePlayingRequest(PlayerData player) {
     Called for every player action on his socket.
 */
 int handlePlayerAction(PlayerData player) {
+    printf("Player action\n");
     TIdReq idRequest;
     TCodeRep errorCode;
 
@@ -259,7 +276,8 @@ int main(int argc, char** argv) {
     */
 
     int err,
-        socketServer;
+        socketServer,
+        maxSock;
 
     initPlayers();
 
@@ -280,6 +298,8 @@ int main(int argc, char** argv) {
         Waiting for players requests
     */
 
+    maxSock = socketServer;
+
     for (;;) {
         FD_ZERO(&readfs);
         FD_SET(socketServer, &readfs);
@@ -287,10 +307,13 @@ int main(int argc, char** argv) {
         for (int i = 0; i < 2; i++) {
             if (players[i].socket != -1) {
                 FD_SET(players[i].socket, &readfs);
+                if (players[i].socket > maxSock) {
+                    maxSock = players[i].socket;
+                }
             }
         }
 
-        err = select(4, &readfs, NULL, NULL, NULL);
+        err = select(maxSock + 1, &readfs, NULL, NULL, NULL);
         if ((err < 0) && (errno!=EINTR)) {
             printf("[QuantikServer] Error occured on select");
             exit(3);
