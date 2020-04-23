@@ -4,6 +4,9 @@
 
 #include <time.h>
 
+#define SEVERE_COLOR "\x1B[31m"
+#define RESET_COLOR "\x1B[0m"
+
 /*
     Structures definition
 */
@@ -38,16 +41,17 @@ int gameStarted = 0;
 */
 int debug = 0;
 char logMessage[200];
-typedef enum { INFO, ERROR, DEBUG } LogType;
+typedef enum { INFO, SEVERE, DEBUG } LogType;
 
 
 void printLog(LogType type) {
-    char logTypeStr[6];
+    char logTypeStr[7];
     if (type == DEBUG && debug) {
         strcpy(logTypeStr, "DEBUG");
     }
-    else if (type == ERROR) {
-        strcpy(logTypeStr, "ERROR");
+    else if (type == SEVERE) {
+        strcpy(logTypeStr, "SEVERE");
+        printf(SEVERE_COLOR);
     }
     else if (type == INFO) {
         strcpy(logTypeStr, "INFO");
@@ -70,7 +74,7 @@ void printLog(LogType type) {
     if (s < 10) {
         sc = '0';
     }
-    printf("[%c%i:%c%i:%c%i][%s] %s\n", hc, h, mc, m, sc, s, logTypeStr, logMessage);
+    printf("[%c%i:%c%i:%c%i][%s] %s\n" RESET_COLOR, hc, h, mc, m, sc, s, logTypeStr, logMessage);
 }
 
 
@@ -113,6 +117,15 @@ void initPlayers() {
     }
     players[0].opponent = &players[1];
     players[1].opponent = &players[0];
+}
+
+
+void disconnectPlayer(PlayerData *player) {
+    sprintf(logMessage, "Player %i disconnected", player->id); printLog(INFO);
+    shutdown(player->socket, SHUT_RDWR);
+    close(player->socket);
+    player->socket = -1;
+    // TODO give victory to opponent ...
 }
 
 
@@ -170,7 +183,7 @@ int handlePlayerConnection(int socketServer, PlayerData players[]) {
                     (struct sockaddr *)&addClient,
                     (socklen_t *)&sizeAddr);
     if (playerSock < 0) {
-        printf("[QuantikServer] Error occured while accepting a player connection.");
+        sprintf(logMessage, "Error occured while accepting a player connection"); printLog(SEVERE);
         return -2;
     }
 
@@ -196,12 +209,12 @@ int handleGameRequest(PlayerData *player) {
 
     int err = recv(player->socket, &gameRequest, sizeof(TPartieReq), 0);
     if (err <= 0) {
-        printf("[QuantikServer] Error occured while receiving player request.");
+        sprintf(logMessage, "Error occured while receiving player request"); printLog(SEVERE);
         return 1;
     }
 
     if (strcmp(gameRequest.nomJoueur, player->opponent->name) == 0) {
-        sprintf(logMessage, "already existing name '%s'", gameRequest.nomJoueur); printLog(DEBUG);
+        sprintf(logMessage, "Name '%s' already exists", gameRequest.nomJoueur); printLog(DEBUG);
         return 2;
     }
 
@@ -223,7 +236,7 @@ int handleGameRequest(PlayerData *player) {
 
     player->ready = 1;
 
-    sprintf(logMessage, "Player '%s' with id %i ready using color %i", player->name, player->id, player->color); printLog(INFO);
+    sprintf(logMessage, "Player '%s' with id %i is ready using color %i", player->name, player->id, player->color); printLog(INFO);
 
     if (player->opponent->ready) {
         launchGame();
@@ -239,7 +252,7 @@ int handlePlayingRequest(PlayerData *player) {
 
     int err = recv(player->socket, &playingRequest, sizeof(TCoupReq), 0);
     if (err <= 0) {
-        printf("[QuantikServer] Error occured while receiving player request.");
+        sprintf(logMessage, "Error occured while receiving player request"); printLog(SEVERE);
         return 1;
     }
 }
@@ -256,8 +269,8 @@ int handlePlayerAction(PlayerData *player) {
 
     int err = recv(player->socket, &idRequest, sizeof(TIdReq), MSG_PEEK);
     if (err <= 0) {
-        printf("[QuantikServer] Error occured while receiving player request.");
-        errorCode = ERR_TYP;
+        disconnectPlayer(player);
+        return 0;
     }
     else {
         if (idRequest == PARTIE) {
@@ -317,9 +330,23 @@ int main(int argc, char** argv) {
 
     socketServer = socketServeur(port);
     if (socketServer < 0) {
-        printf("[QuantikServer] Error occured while initializing server on port %i.\n", port);
+        sprintf(logMessage, "Error occured while initializing server on port %i.\n", port); printLog(SEVERE);
         exit(2);
     }
+
+    char initMessage[150] = "Server initialized on port %i with ";
+    if (!timeout) {
+        strcat(initMessage, "no ");
+    }
+    strcat(initMessage, "timeout and ");
+    if (!valid) {
+        strcat(initMessage, "no ");
+    }
+    strcat(initMessage, "validation");
+    if (debug) {
+        strcat(initMessage, " in debug mode");
+    }
+    sprintf(logMessage, initMessage, port); printLog(INFO);
 
     /*
         Waiting for players requests
@@ -342,7 +369,7 @@ int main(int argc, char** argv) {
 
         err = select(maxSock + 1, &readfs, NULL, NULL, NULL);
         if ((err < 0) && (errno!=EINTR)) {
-            printf("[QuantikServer] Error occured on select");
+            sprintf(logMessage, "Error occured on select"); printLog(SEVERE);
             exit(3);
         }
 
