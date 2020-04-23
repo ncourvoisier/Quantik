@@ -8,6 +8,7 @@
     Structures definition
 */
 typedef struct PlayerData {
+    int id;
     struct PlayerData *opponent;
     char name[T_NOM];
     int socket;
@@ -30,11 +31,51 @@ int port = -1;
 */
 PlayerData players[2];
 int gameStarted = 0;
+
+
+/*
+    Logs mechanic
+*/
+int debug = 0;
 char logMessage[200];
+typedef enum { INFO, ERROR, DEBUG } LogType;
+
+
+void printLog(LogType type) {
+    char logTypeStr[6];
+    if (type == DEBUG && debug) {
+        strcpy(logTypeStr, "DEBUG");
+    }
+    else if (type == ERROR) {
+        strcpy(logTypeStr, "ERROR");
+    }
+    else if (type == INFO) {
+        strcpy(logTypeStr, "INFO");
+    }
+    else {
+        return;
+    }
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+    int h = t->tm_hour;
+    int m = t->tm_min;
+    int s = t->tm_sec;
+    char hc='\0', mc='\0', sc='\0';
+    if (h < 10) {
+        hc = '0';
+    }
+    if (m < 10) {
+        mc = '0';
+    }
+    if (s < 10) {
+        sc = '0';
+    }
+    printf("[%c%i:%c%i:%c%i][%s] %s\n", hc, h, mc, m, sc, s, logTypeStr, logMessage);
+}
 
 
 void printUsage(char* execName) {
-    printf("Usage: %s [--noValid|--noTimeout] no_port\n", execName);
+    printf("Usage: %s [--noValid|--noTimeout|--debug] no_port\n", execName);
 }
 
 
@@ -51,6 +92,9 @@ int parsingParameters(int argc, char** argv) {
         else if (strcmp(argv[i], "--noTimeout") == 0) {
             timeout = 0;
         }
+        else if (strcmp(argv[i], "--debug") == 0) {
+            debug = 1;
+        }
         else {
             printf("Error: unknown argument '%s'\n", argv[i]);
             printUsage(argv[0]);
@@ -59,29 +103,6 @@ int parsingParameters(int argc, char** argv) {
     }
     port = atoi(argv[argc - 1]);
     return 0;
-}
-
-
-/*
-    See usage of 'sprintf' to pass formatted strings as parameter
-*/
-void printLog() {
-    time_t now = time(NULL);
-    struct tm *t = localtime(&now);
-    int h = t->tm_hour;
-    int m = t->tm_min;
-    int s = t->tm_sec;
-    char hc='\0', mc='\0', sc='\0';
-    if (h < 10) {
-        hc = '0';
-    }
-    if (m < 10) {
-        mc = '0';
-    }
-    if (s < 10) {
-        sc = '0';
-    }
-    printf("[%c%i:%c%i:%c%i] %s\n", hc, h, mc, m, sc, s, logMessage);
 }
 
 
@@ -100,14 +121,14 @@ void initPlayers() {
     -> use ERR_OK value for code when both players are ready.
     -> use ERR_PARTIE or ERR_TYP to warn the player that his attempt is invalid.
 */
-int sendGameResponse(PlayerData player, TCodeRep code) {
+int sendGameResponse(PlayerData *player, TCodeRep code) {
     TPartieRep gameResponse;
     gameResponse.err = code;
     if (code == ERR_OK) {
-        strcpy(gameResponse.nomAdvers, player.opponent->name);
-        gameResponse.validCoulPion = player.colorAccepted;
+        strcpy(gameResponse.nomAdvers, player->opponent->name);
+        gameResponse.validCoulPion = player->colorAccepted;
     }
-    int err = send(player.socket, &gameResponse, sizeof(TPartieRep), 0);
+    int err = send(player->socket, &gameResponse, sizeof(TPartieRep), 0);
     if (err <= 0) {
         return 1;
         // TODO
@@ -115,15 +136,15 @@ int sendGameResponse(PlayerData player, TCodeRep code) {
 }
 
 
-int sendPlayingResponse(PlayerData player, TCodeRep code) {
+int sendPlayingResponse(PlayerData *player, TCodeRep code) {
     // TODO
 }
 
 
 void launchGame() {
-    sprintf(logMessage, "Starting the game"); printLog();
+    sprintf(logMessage, "Starting the game"); printLog(INFO);
     for (int i = 0; i < 2; i++) {
-        sendGameResponse(players[i], ERR_OK); // TODO test ret
+        sendGameResponse(&players[i], ERR_OK); // TODO test ret
     }
     gameStarted = 1;
     // Game initializing ...
@@ -154,8 +175,9 @@ int handlePlayerConnection(int socketServer, PlayerData players[]) {
     }
 
     players[newPlayer].socket = playerSock;
+    players[newPlayer].id = newPlayer;
 
-    sprintf(logMessage, "New connection on socket %i", playerSock); printLog();
+    sprintf(logMessage, "New connection on socket %i with id %i", playerSock, newPlayer); printLog(INFO);
 
     return playerSock;
 }
@@ -167,39 +189,43 @@ int handlePlayerConnection(int socketServer, PlayerData players[]) {
     1 -> invalid request type
     2 -> name already used
 */
-int handleGameRequest(PlayerData player) {
+int handleGameRequest(PlayerData *player) {
+    sprintf(logMessage, "game request by player %i", player->id); printLog(DEBUG);
+
     TPartieReq gameRequest;
 
-    int err = recv(player.socket, &gameRequest, sizeof(TPartieReq), 0);
+    int err = recv(player->socket, &gameRequest, sizeof(TPartieReq), 0);
     if (err <= 0) {
         printf("[QuantikServer] Error occured while receiving player request.");
         return 1;
     }
 
-    if (strcmp(gameRequest.nomJoueur, player.opponent->name) == 0) {
+    if (strcmp(gameRequest.nomJoueur, player->opponent->name) == 0) {
+        sprintf(logMessage, "already existing name '%s'", gameRequest.nomJoueur); printLog(DEBUG);
         return 2;
     }
 
-    strcpy(player.name, gameRequest.nomJoueur);
-    if (player.opponent->ready && player.opponent->color == gameRequest.coulPion) {
-        player.colorAccepted = KO;
+    strcpy(player->name, gameRequest.nomJoueur);
+
+    if (player->opponent->ready && player->opponent->color == gameRequest.coulPion) {
+        player->colorAccepted = KO;
         if (gameRequest.coulPion == BLANC) {
-            player.color = NOIR;
+            player->color = NOIR;
         }
         else {
-            player.color = BLANC;
+            player->color = BLANC;
         }
     }
     else {
-        player.colorAccepted = OK;
-        player.color = gameRequest.coulPion;
+        player->colorAccepted = OK;
+        player->color = gameRequest.coulPion;
     }
 
-    player.ready = 1;
+    player->ready = 1;
 
-    sprintf(logMessage, "Player '%s' ready using color %i", player.name, player.color);
+    sprintf(logMessage, "Player '%s' with id %i ready using color %i", player->name, player->id, player->color); printLog(INFO);
 
-    if (player.opponent->ready) {
+    if (player->opponent->ready) {
         launchGame();
     }
 }
@@ -208,10 +234,10 @@ int handleGameRequest(PlayerData player) {
 /*
     Called for playing requests.
 */
-int handlePlayingRequest(PlayerData player) {
+int handlePlayingRequest(PlayerData *player) {
     TCoupReq playingRequest;
 
-    int err = recv(player.socket, &playingRequest, sizeof(TCoupReq), 0);
+    int err = recv(player->socket, &playingRequest, sizeof(TCoupReq), 0);
     if (err <= 0) {
         printf("[QuantikServer] Error occured while receiving player request.");
         return 1;
@@ -222,12 +248,13 @@ int handlePlayingRequest(PlayerData player) {
 /*
     Called for every player action on his socket.
 */
-int handlePlayerAction(PlayerData player) {
-    printf("Player action\n");
+int handlePlayerAction(PlayerData *player) {
+    sprintf(logMessage, "action by player %i", player->id); printLog(DEBUG);
+
     TIdReq idRequest;
     TCodeRep errorCode;
 
-    int err = recv(player.socket, &idRequest, sizeof(TIdReq), MSG_PEEK);
+    int err = recv(player->socket, &idRequest, sizeof(TIdReq), MSG_PEEK);
     if (err <= 0) {
         printf("[QuantikServer] Error occured while receiving player request.");
         errorCode = ERR_TYP;
@@ -326,7 +353,7 @@ int main(int argc, char** argv) {
         for (int i = 0; i < 2; i++) {
             if (players[i].socket != -1) {
                 if (FD_ISSET(players[i].socket, &readfs)) { // Action on player's socket
-                    handlePlayerAction(players[i]);
+                    handlePlayerAction(&players[i]);
                 }
             }
         }
