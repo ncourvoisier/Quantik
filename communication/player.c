@@ -379,7 +379,67 @@ int main (int argc, char** argv) {
 				    return -5;
 				}
 				printf("valid adv[%d,%d]",coupResponseAdversaire.err, coupResponseAdversaire.validCoup);
+				switch(coupResponseAdversaire.err) {
+					case ERR_OK :
+				      break;
+				  case ERR_PARTIE :
+				      printf("Couldn't log into the game, invalid move\n");
+				      break;
+				  case ERR_TYP :
+				      printf("Couldn't log into the game, move\n");
+				      break;
+				  default :
+				      printf("default\n");
+				}
 				
+				switch(coupResponseAdversaire.validCoup) {
+					case VALID : 
+				      printf("The move of %s is valid\n", gameResponse.nomAdvers);
+				      break;
+				  case TIMEOUT :
+				      printf("L'adversaire a mis trop de temps a jouer.\n");
+				      //end = 1;
+				      break;
+				  case TRICHE :
+				      printf("L'adversaire a triché\n");
+				      //end = 1;
+				      break;
+				  default :
+				      printf("default\n");
+				}
+				
+				switch(coupResponseAdversaire.propCoup) {
+					case CONT :
+						printf("Nous continuons\n");
+						break;
+					case GAGNE :
+						printf("Le joueur adverse a gagné\n");
+						break;
+					case NUL :
+						printf("Vous avez fait match nul\n");
+						break;
+					case PERDU :
+						printf("Le joueur adverse a perdu\n");
+						break;
+					default :
+					 printf("default\n");
+				}
+				switch(coupResponse.propCoup) {
+					case CONT :
+						printf("Nous continuons\n");
+						break;
+					case GAGNE :
+						printf("Vous avez gagné\n");
+						break;
+					case NUL :
+						printf("Nous avons fait match nul\n");
+						break;
+					case PERDU :
+						printf("Vous avez perdu\n");
+						break;
+					default :
+					 printf("default\n");
+				}
 				
 				printf("RECV COUP ADV BLANC\n");
 				err = recv(sock, &coupRepAdversaire, sizeof(TCoupReq),0);
@@ -410,6 +470,51 @@ int main (int argc, char** argv) {
 				    return -5;
 				}
 				printf("valid adv[%d,%d]",coupResponseAdversaire.err, coupResponseAdversaire.validCoup);
+				switch(coupResponseAdversaire.err) {
+					case ERR_OK :
+				      break;
+				  case ERR_PARTIE :
+				      printf("Couldn't log into the game, invalid move\n");
+				      break;
+				  case ERR_TYP :
+				      printf("Couldn't log into the game, move\n");
+				      break;
+				  default :
+				      printf("default\n");
+				}
+				
+				switch(coupResponseAdversaire.validCoup) {
+					case VALID : 
+				      printf("The move of %s is valid\n", gameResponse.nomAdvers);
+				      break;
+				  case TIMEOUT :
+				      printf("L'adversaire a mis trop de temps a jouer.\n");
+				      //end = 1;
+				      break;
+				  case TRICHE :
+				      printf("L'adversaire a triché\n");
+				      //end = 1;
+				      break;
+				  default :
+				      printf("default\n");
+				}
+				
+				switch(coupResponseAdversaire.propCoup) {
+					case CONT :
+						printf("Nous continuons\n");
+						break;
+					case GAGNE :
+						printf("Le joueur adverse a gagné\n");
+						break;
+					case NUL :
+						printf("Vous avez fait match nul\n");
+						break;
+					case PERDU :
+						printf("Le joueur adverse a perdu\n");
+						break;
+					default :
+					 printf("default\n");
+				}
 				
 				
 				printf("RECV COUP ADV NOIR \n");
@@ -489,6 +594,22 @@ int main (int argc, char** argv) {
 				      break;
 				  default :
 				      printf("default\n");
+				}
+				switch(coupResponse.propCoup) {
+					case CONT :
+						printf("Nous continuons\n");
+						break;
+					case GAGNE :
+						printf("Vous avez gagné\n");
+						break;
+					case NUL :
+						printf("Nous avons fait match nul\n");
+						break;
+					case PERDU :
+						printf("Vous avez perdu\n");
+						break;
+					default :
+					 printf("default\n");
 				}
 				
 			}
