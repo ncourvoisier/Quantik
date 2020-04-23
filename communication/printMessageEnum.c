@@ -23,14 +23,14 @@ int responseError(TCodeRep err) {
 int responseValidCoup(TValCoup validCoup, char* name) {
 	switch(validCoup) {
 		case VALID : 
-	      printf("Your move is valid\n");
+	      printf("%s, your move is valid\n", name);
 	      break;
 	  case TIMEOUT :
-	      printf("Your move isn't valid, you are over time to play.\n");
+	      printf("%s, your move isn't valid, you are over time to play.\n", name);
 	      //end = 1;
 	      break;
 	  case TRICHE :
-	      printf("Your move isn't valid, CHEATER\n");
+	      printf("%s, your move isn't valid, CHEATER\n", name);
 	      //end = 1;
 	      break;
 	  default :
@@ -42,16 +42,16 @@ int responseValidCoup(TValCoup validCoup, char* name) {
 int responseContinuerAJouer(TPropCoup coup, char* name) {
 	switch(coup) {
 		case CONT :
-			printf("Nous continuons\n");
+			printf("We continue the game\n");
 			break;
 		case GAGNE :
-			printf("Vous avez gagné\n");
+			printf("%s, you won !\n", name);
 			break;
 		case NUL :
-			printf("Nous avons fait match nul\n");
+			printf("%s, you drew\n", name);
 			break;
 		case PERDU :
-			printf("Vous avez perdu\n");
+			printf("%s, you lost !\n", name);
 			break;
 		default :
 		 printf("default\n");
@@ -82,11 +82,11 @@ int responseAdversaireValidCoup(TValCoup validCoup, char* name) {
 		    printf("The move of %s is valid\n", name);
 		    break;
 		case TIMEOUT :
-		    printf("L'adversaire a mis trop de temps a jouer.\n");
+		    printf("%s took too long to play\n", name);
 		    //end = 1;
 		    break;
 		case TRICHE :
-		    printf("L'adversaire a triché\n");
+		    printf("%s cheated\n", name);
 		    //end = 1;
 		    break;
 		default :
@@ -98,16 +98,16 @@ int responseAdversaireValidCoup(TValCoup validCoup, char* name) {
 int responseAdversairePropCoup(TPropCoup coup, char* name) {
 	switch(coup) {
 		case CONT :
-			printf("Nous continuons\n");
+			printf("We continue the game\n");
 			break;
 		case GAGNE :
-			printf("Le joueur adverse a gagné\n");
+			printf("The opposing player, %s, won\n", name);
 			break;
 		case NUL :
-			printf("Vous avez fait match nul\n");
+			printf("You drew against %s\n", name);
 			break;
 		case PERDU :
-			printf("Le joueur adverse a perdu\n");
+			printf("The opposing player, %s, lost\n", name);
 			break;
 		default :
 		 printf("default\n");
