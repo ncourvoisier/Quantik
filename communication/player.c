@@ -2,127 +2,11 @@
 #include "fonctionTCP.h"
 #include "protocolQuantik.h"
 #include "conversion.h"
+#include "printMessageEnum.h"
 
 void printHelp(char* name) {
     printf("usage : %s IPserver port name color(W/B) portIA\n", name);
 }
-
-void printError(int err, char* msg, int sock) {
-	if (err <= 0) {
-    perror(msg);
-    shutdown(sock, SHUT_RDWR); close(sock);
-    exit(EXIT_FAILURE);
-	}
-}
-
-
-int connectionIA(int port) {
-  printf("CONNECTION IA");
-  struct sockaddr_in addClient;
-  int sockTrans;
-  int	sizeAddr;
-	int	err;
-
-  int sockServ = socketServeur(port);
-  if (sockServ < 0){
-		printf("(connectionIA) Error on socket server portIA\n");
-		return -2;
-	}
-
-  sizeAddr = sizeof(struct sockaddr_in);
-	sockTrans = accept(sockServ, (struct sockaddr *)&addClient, (socklen_t *)&sizeAddr);
-	if (sockTrans < 0) {
-		perror("(connectionIA) Error on accept");
-		return -3;
-	}
-
-  return sockTrans;
-}
-
-int sendIA(int ent, int sockIA) {
-	int err = 0;
-	ent = htonl(ent);
-	err = send(sockIA, &ent, sizeof(int),0);
-	if (err <= 0) {
-		perror("(player) send error with the IA request\n");
-		shutdown(sockIA, SHUT_RDWR); close(sockIA);
-		return -1;
-	}
-  ent = ntohl(ent);
-  return 0;
-}
-
-int recvIA(int sockIA) {
-	 	int entres;
-    int err = 0;
-    while (err < 4) {
-        err = recv(sockIA, &entres, sizeof(int),MSG_PEEK);
-    }
-    err = recv(sockIA, &entres, sizeof(int),0);
-    if (err <= 0) {
-        perror("(player) recv error with the IA response\n");
-        shutdown(sockIA, SHUT_RDWR); close(sockIA);
-        return -1;
-    }
-    int res = ntohl(entres);
-    return res;
-}
-
-
-void responseError(TCodeRep err) {
-	switch(err) {
-		case ERR_OK :
-	      break;
-	  case ERR_PARTIE :
-	      printf("Couldn't log into the game, invalid move\n");
-	      break;
-	  case ERR_TYP :
-	      printf("Couldn't log into the game, move\n");
-	      break;
-	  default :
-	      printf("default\n");
-	}
-}
-
-int responseValidCoup(TValCoup validCoup) {
-	switch(validCoup) {
-		case VALID : 
-	      printf("Your move is valid\n");
-	      break;
-	  case TIMEOUT :
-	      printf("Your move isn't valid, you are over time to play.\n");
-	      //end = 1;
-	      break;
-	  case TRICHE :
-	      printf("Your move isn't valid, CHEATER\n");
-	      //end = 1;
-	      break;
-	  default :
-	      printf("default\n");
-	}
-	return 0;
-}
-
-int responseContinuerAJouer(TPropCoup coup) {
-	switch(coup) {
-		case CONT :
-			printf("Nous continuons\n");
-			break;
-		case GAGNE :
-			printf("Vous avez gagné\n");
-			break;
-		case NUL :
-			printf("Nous avons fait match nul\n");
-			break;
-		case PERDU :
-			printf("Vous avez perdu\n");
-			break;
-		default :
-		 printf("default\n");
-	}
-	return 0;
-}
-
 
 
 int main (int argc, char** argv) {
@@ -152,16 +36,13 @@ int main (int argc, char** argv) {
         return -2;
     }
     
-    
     gameRequest.idReq = PARTIE;
-    
     strcpy(gameRequest.nomJoueur, playerName);
 
     err = send(sock, &gameRequest, sizeof(TPartieReq),0);
     printError(err, "(player) send error with the game request\n", sock);
 
     printf("Waiting for player...\n");
-
     err = recv(sock, &gameResponse, sizeof(TPartieRep),0);
     printError(err, "(player) recv error with the game response\n", sock);
 
@@ -259,9 +140,9 @@ int main (int argc, char** argv) {
 				err = recv(sock, &coupResponse, sizeof(TCoupRep),0);
 				printError(err, "(player) recv error with the game response\n", sock);
 				
-				responseError(coupResponse.err);
-				end = responseValidCoup(coupResponse.validCoup);
-				end = responseContinuerAJouer(coupResponse.propCoup);
+				end = responseError(coupResponse.err);
+				end = responseValidCoup(coupResponse.validCoup, gameRequest.nomJoueur);
+				end = responseContinuerAJouer(coupResponse.propCoup, gameRequest.nomJoueur);
 				
 				err = 0;
 				printf("Waiting the player to play...\n");
@@ -270,51 +151,9 @@ int main (int argc, char** argv) {
 				printError(err, "(player) recv error with the adversaire response\n", sock);
 				
 				printf("valid adv[%d,%d]",coupResponseAdversaire.err, coupResponseAdversaire.validCoup);
-				switch(coupResponseAdversaire.err) {
-					case ERR_OK :
-				      break;
-				  case ERR_PARTIE :
-				      printf("Couldn't log into the game, invalid move\n");
-				      break;
-				  case ERR_TYP :
-				      printf("Couldn't log into the game, move\n");
-				      break;
-				  default :
-				      printf("default\n");
-				}
-				
-				switch(coupResponseAdversaire.validCoup) {
-					case VALID : 
-				      printf("The move of %s is valid\n", gameResponse.nomAdvers);
-				      break;
-				  case TIMEOUT :
-				      printf("L'adversaire a mis trop de temps a jouer.\n");
-				      //end = 1;
-				      break;
-				  case TRICHE :
-				      printf("L'adversaire a triché\n");
-				      //end = 1;
-				      break;
-				  default :
-				      printf("default\n");
-				}
-				
-				switch(coupResponseAdversaire.propCoup) {
-					case CONT :
-						printf("Nous continuons\n");
-						break;
-					case GAGNE :
-						printf("Le joueur adverse a gagné\n");
-						break;
-					case NUL :
-						printf("Vous avez fait match nul\n");
-						break;
-					case PERDU :
-						printf("Le joueur adverse a perdu\n");
-						break;
-					default :
-					 printf("default\n");
-				}
+				end = responseAdversaireError(coupResponseAdversaire.err);
+				end = responseAdversaireValidCoup(coupResponseAdversaire.validCoup, gameResponse.nomAdvers);
+				end = responseAdversairePropCoup(coupResponseAdversaire.propCoup, gameResponse.nomAdvers);
 				
 				
 				printf("RECV COUP ADV BLANC\n");
@@ -327,65 +166,25 @@ int main (int argc, char** argv) {
 				int ca = coupRepAdversaire.propCoup;
 				
 				printf("\n[x,y,p,c]\n[%d,%d,%d,%d]\n", xa, ya, pa, ca);
-				printf("\n[%d,%d,%d,%d]\n", coupRepAdversaire.posPion.l, coupRepAdversaire.posPion.c, coupRepAdversaire.pion.typePion, ca);
 			
 			}
+			
+			
+			
 			
 			if (gameRequest.coulPion == NOIR) {
 				
 				printf("\n\nIteration %d\n", i);
-				err = 0;
+				
 				printf("RECV COUV VALIDE ADVERSAIRE NOIR\n");
+				err = 0;
 				err = recv(sock, &coupResponseAdversaire, sizeof(TCoupRep),0);
 				printError(err, "(player) recv error with the adversaire response\n", sock);
 				
 				printf("valid adv[%d,%d]",coupResponseAdversaire.err, coupResponseAdversaire.validCoup);
-				switch(coupResponseAdversaire.err) {
-					case ERR_OK :
-				      break;
-				  case ERR_PARTIE :
-				      printf("Couldn't log into the game, invalid move\n");
-				      break;
-				  case ERR_TYP :
-				      printf("Couldn't log into the game, move\n");
-				      break;
-				  default :
-				      printf("default\n");
-				}
-				
-				switch(coupResponseAdversaire.validCoup) {
-					case VALID : 
-				      printf("The move of %s is valid\n", gameResponse.nomAdvers);
-				      break;
-				  case TIMEOUT :
-				      printf("L'adversaire a mis trop de temps a jouer.\n");
-				      //end = 1;
-				      break;
-				  case TRICHE :
-				      printf("L'adversaire a triché\n");
-				      //end = 1;
-				      break;
-				  default :
-				      printf("default\n");
-				}
-				
-				switch(coupResponseAdversaire.propCoup) {
-					case CONT :
-						printf("Nous continuons\n");
-						break;
-					case GAGNE :
-						printf("Le joueur adverse a gagné\n");
-						break;
-					case NUL :
-						printf("Vous avez fait match nul\n");
-						break;
-					case PERDU :
-						printf("Le joueur adverse a perdu\n");
-						break;
-					default :
-					 printf("default\n");
-				}
-				
+				end = responseAdversaireError(coupResponseAdversaire.err);
+				end = responseAdversaireValidCoup(coupResponseAdversaire.validCoup, gameResponse.nomAdvers);
+				end = responseAdversairePropCoup(coupResponseAdversaire.propCoup, gameResponse.nomAdvers);
 				
 				printf("RECV COUP ADV NOIR \n");
 				err = 0;
@@ -398,7 +197,6 @@ int main (int argc, char** argv) {
 				int ca = coupRepAdversaire.propCoup;
 				
 				printf("\n[x,y,p,c]\n[%d,%d,%d,%d]\n", xa, ya, pa, ca);
-				printf("\n[%d,%d,%d,%d]\n", coupRepAdversaire.posPion.l, coupRepAdversaire.posPion.c, coupRepAdversaire.pion.typePion, ca);
 				
 				printf("Choisir x (0,1,2,3) :\n");
 				scanf("%d", &x);
@@ -428,8 +226,8 @@ int main (int argc, char** argv) {
 				printError(err, "(player) recv error with the game response\n", sock);
 				
 				responseError(coupResponse.err);
-				end = responseValidCoup(coupResponse.validCoup);
-				end = responseContinuerAJouer(coupResponse.propCoup);
+				end = responseValidCoup(coupResponse.validCoup, gameRequest.nomJoueur);
+				end = responseContinuerAJouer(coupResponse.propCoup, gameRequest.nomJoueur);
 						
 			}
 		

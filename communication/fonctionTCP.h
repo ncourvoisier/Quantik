@@ -13,7 +13,12 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+void printError(int err, char* msg, int sock);
 int socketServeur(ushort nPort);
 int socketClient(char* nomMachine, ushort nPort);
+int connectionIA(int port);
+int sendIA(int ent, int sockIA);
+int recvIA(int sockIA);
 
 #endif
+

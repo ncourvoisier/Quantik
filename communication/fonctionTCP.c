@@ -2,11 +2,19 @@
 
 #define TAIL_BUF 20
 
+void printError(int err, char* msg, int sock) {
+	if (err <= 0) {
+    perror(msg);
+    shutdown(sock, SHUT_RDWR); close(sock);
+    exit(EXIT_FAILURE);
+	}
+}
+
 int socketServeur(ushort nPort) {
-	int  sockConx,        /* descripteur socket connexion */
-       port,            /* numero de port */
-       sizeAddr,        /* taille de l'adresse d'une socket */
-       err;	        /* code d'erreur */
+	int sockConx;        /* descripteur socket connexion */
+	int port;            /* numero de port */
+  int sizeAddr;        /* taille de l'adresse d'une socket */
+  int err;		         /* code d'erreur */
   
   char buffer[TAIL_BUF]; /* buffer de reception */
   
@@ -20,18 +28,12 @@ int socketServeur(ushort nPort) {
   
   port = nPort;
   
-  /* 
-   * creation de la socket, protocole TCP 
-   */
   sockConx = socket(AF_INET, SOCK_STREAM, 0);
   if (sockConx < 0) {
     perror("(serveurTCP) erreur de socket");
     return -2;
   }
   
-  /* 
-   * initialisation de l'adresse de la socket 
-   */
   addServ.sin_family = AF_INET;
   addServ.sin_port = htons(port); // conversion en format réseau (big endian)
   addServ.sin_addr.s_addr = INADDR_ANY; 
@@ -40,9 +42,6 @@ int socketServeur(ushort nPort) {
   
   sizeAddr = sizeof(struct sockaddr_in);
 
-  /* 
-   * attribution de l'adresse a la socket
-   */  
   err = bind(sockConx, (struct sockaddr *)&addServ, sizeAddr);
   if (err < 0) {
     perror("(serveurTCP) erreur sur le bind");
@@ -56,10 +55,6 @@ int socketServeur(ushort nPort) {
   	return -5;
   }  
   
-  /* 
-   * utilisation en socket de controle, puis attente de demandes de 
-   * connexion.
-   */
   err = listen(sockConx, 1);
   if (err < 0) {
     perror("(serveurTCP) erreur dans listen");
@@ -73,9 +68,9 @@ int socketServeur(ushort nPort) {
 
 int socketClient(char* nomMachine, ushort nPort) {
   char chaine[TAIL_BUF];   /* buffer */
-  int sock,                /* descripteur de la socket locale */
-      port,                /* variables de lecture */
-      err;                 /* code d'erreur */
+  int sock;                /* descripteur de la socket locale */
+  int port;                /* variables de lecture */
+  int err;                 /* code d'erreur */
   char* ipMachServ;        /* pour solution inet_aton */
   char* nomMachServ;       /* pour solution getaddrinfo */
   struct sockaddr_in addSockServ;  
@@ -87,18 +82,11 @@ int socketClient(char* nomMachine, ushort nPort) {
   ipMachServ = nomMachine; nomMachServ = nomMachine;
   port = nPort;
 
-  /* 
-   * creation d'une socket, domaine AF_INET, protocole TCP 
-   */
   sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock < 0) {
     perror("(client) erreur sur la creation de socket");
     return -2;
   }
-  
-  /* 
-   * initialisation de l'adresse de la socket - version inet_aton
-   */
   
   addSockServ.sin_family = AF_INET;
   err = inet_aton(ipMachServ, &addSockServ.sin_addr);
@@ -155,6 +143,83 @@ int socketClient(char* nomMachine, ushort nPort) {
 	
   return sock;
 }
+
+int connectionIA(int port) {
+  printf("CONNECTION IA");
+  struct sockaddr_in addClient;
+  int sockTrans;
+  int	sizeAddr;
+	int	err;
+
+  int sockServ = socketServeur(port);
+  if (sockServ < 0){
+		printf("(connectionIA) Error on socket server portIA\n");
+		return -2;
+	}
+
+  sizeAddr = sizeof(struct sockaddr_in);
+	sockTrans = accept(sockServ, (struct sockaddr *)&addClient, (socklen_t *)&sizeAddr);
+	if (sockTrans < 0) {
+		perror("(connectionIA) Error on accept");
+		return -3;
+	}
+
+  return sockTrans;
+}
+
+int sendIA(int ent, int sockIA) {
+	int err = 0;
+	ent = htonl(ent);
+	err = send(sockIA, &ent, sizeof(int),0);
+	if (err <= 0) {
+		perror("(player) send error with the IA request\n");
+		shutdown(sockIA, SHUT_RDWR); close(sockIA);
+		return -1;
+	}
+  ent = ntohl(ent);
+  return 0;
+}
+
+int recvIA(int sockIA) {
+	 	int entres;
+    int err = 0;
+    while (err < 4) {
+        err = recv(sockIA, &entres, sizeof(int),MSG_PEEK);
+    }
+    err = recv(sockIA, &entres, sizeof(int),0);
+    if (err <= 0) {
+        perror("(player) recv error with the IA response\n");
+        shutdown(sockIA, SHUT_RDWR); close(sockIA);
+        return -1;
+    }
+    int res = ntohl(entres);
+    return res;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
