@@ -40,11 +40,11 @@ int main (int argc, char** argv) {
     strcpy(gameRequest.nomJoueur, playerName);
 
     err = send(sock, &gameRequest, sizeof(TPartieReq),0);
-    printError(err, "(player) send error with the game request\n", sock);
+    printError(err, "(player) send error with the initialize game request\n", sock);
 
     printf("Waiting for player...\n");
     err = recv(sock, &gameResponse, sizeof(TPartieRep),0);
-    printError(err, "(player) recv error with the game response\n", sock);
+    printError(err, "(player) recv error with the initialize game response\n", sock);
 
 
     switch(gameResponse.err) {
@@ -133,12 +133,12 @@ int main (int argc, char** argv) {
 				printf("SEND BLANC\n");
 				err = 0;
 				err = send(sock, &coupReq, sizeof(TCoupReq),0);
-				printError(err, "(player) send error during the last try\n", sock);
+				printError(err, "(player) send error with the game request of one move\n", sock);
 				
 			 	printf("RECV REPONSE VALIDE BLANC\n");
 				err = 0;
 				err = recv(sock, &coupResponse, sizeof(TCoupRep),0);
-				printError(err, "(player) recv error with the game response\n", sock);
+				printError(err, "(player) recv error with the game response of one move\n", sock);
 				
 				end = responseError(coupResponse.err);
 				end = responseValidCoup(coupResponse.validCoup, gameRequest.nomJoueur);
@@ -148,7 +148,7 @@ int main (int argc, char** argv) {
 				printf("Waiting the player to play...\n");
 				printf("RECV COUV VALIDE ADVERSAIRE BLANC\n");
 				err = recv(sock, &coupResponseAdversaire, sizeof(TCoupRep),0);
-				printError(err, "(player) recv error with the adversaire response\n", sock);
+				printError(err, "(player) recv error with the opponent move response\n", sock);
 				
 				printf("valid adv[%d,%d]",coupResponseAdversaire.err, coupResponseAdversaire.validCoup);
 				end = responseAdversaireError(coupResponseAdversaire.err);
@@ -158,7 +158,7 @@ int main (int argc, char** argv) {
 				
 				printf("RECV COUP ADV BLANC\n");
 				err = recv(sock, &coupRepAdversaire, sizeof(TCoupReq),0);
-				printError(err, "(player) recv error with the adversaire response\n", sock);
+				printError(err, "(player) recv error with the opponent move\n", sock);
 
 				int xa = ligneToInt(coupRepAdversaire.posPion.l);
 				int ya = colonneToInt(coupRepAdversaire.posPion.c);
@@ -179,7 +179,7 @@ int main (int argc, char** argv) {
 				printf("RECV COUV VALIDE ADVERSAIRE NOIR\n");
 				err = 0;
 				err = recv(sock, &coupResponseAdversaire, sizeof(TCoupRep),0);
-				printError(err, "(player) recv error with the adversaire response\n", sock);
+				printError(err, "(player) recv error with the opponent move response\n", sock);
 				
 				printf("valid adv[%d,%d]",coupResponseAdversaire.err, coupResponseAdversaire.validCoup);
 				end = responseAdversaireError(coupResponseAdversaire.err);
@@ -189,7 +189,7 @@ int main (int argc, char** argv) {
 				printf("RECV COUP ADV NOIR \n");
 				err = 0;
 				err = recv(sock, &coupRepAdversaire, sizeof(TCoupReq),0);
-				printError(err, "(player) recv error with the adversaire response\n", sock);
+				printError(err, "(player) recv error with the opponent move\n", sock);
 				
 				int xa = ligneToInt(coupRepAdversaire.posPion.l);
 				int ya = colonneToInt(coupRepAdversaire.posPion.c);
@@ -217,13 +217,13 @@ int main (int argc, char** argv) {
 				printf("SEND NOIR\n");
 				err = 0;
 				err = send(sock, &coupReq, sizeof(TCoupReq),0);
-				printError(err, "(player) send error during the last try\n", sock);
+				printError(err, "(player) send error with the game request of one move\n", sock);
 				
 			 	printf("Waiting the player to play...\n");
 				printf("RECV REPONSE COUP NOIR\n");
 				err = 0;
 				err = recv(sock, &coupResponse, sizeof(TCoupRep),0);
-				printError(err, "(player) recv error with the game response\n", sock);
+				printError(err, "(player) recv error with the game response of one move\n", sock);
 				
 				responseError(coupResponse.err);
 				end = responseValidCoup(coupResponse.validCoup, gameRequest.nomJoueur);
