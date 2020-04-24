@@ -7,6 +7,22 @@
 #include "protocolQuantik.h"
 
 
+
+/**
+ * Determinate and print the color of the player
+ * @param TValidCoulPion validColor if the color is valided
+ * @param TCoul color the color choose by the player
+ * @return TCoul the new color
+ */
+TCoul initializeColor(TValidCoul validColor, TCoul color);
+
+/**
+ * Print a message after a party request
+ * @param TCodeRep err the code error to print
+ * @param char* opponent the name of the opponent
+ */
+void initializeGameResponse(TCodeRep err, char* opponent);
+
 /**
  * Print a message according to the error code in parameter
  * @param TCodeRep err the code error to print

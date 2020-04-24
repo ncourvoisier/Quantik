@@ -266,38 +266,9 @@ int main (int argc, char** argv) {
     err = recv(sock, &gameResponse, sizeof(TPartieRep),0);
     printError(err, "(player) recv error with the initialize game response\n", sock);
 
-
-    switch(gameResponse.err) {
-        case ERR_OK : 
-            printf("You play against : %s\n", gameResponse.nomAdvers);
-            break;
-        case ERR_PARTIE :
-            printf("Couldn't log into the game, invalid game request\n");
-            break;
-        case ERR_TYP :
-            printf("Couldn't log into the game, invalid type request\n");
-            break;
-        default :
-            printf("default\n");
-    } 
-
-    if (gameResponse.validCoulPion) {
-        if (gameRequest.coulPion == BLANC) {
-            gameRequest.coulPion = NOIR;
-            printf("Color not available, you will play with black (%d).\n",gameRequest.coulPion);
-        } else {
-            gameRequest.coulPion = BLANC;
-        		printf("Color not available, you will play with white (%d).\n",gameRequest.coulPion);
-        }
-    } else {
-       if (gameRequest.coulPion == BLANC) {
-            printf("You will play with white and you start(%d).\n",gameRequest.coulPion);
-        } else {
-            printf("You will play with black and white start(%d).\n",gameRequest.coulPion);
-        }
-    }
-
-
+		initializeGameResponse(gameResponse.err, gameResponse.nomAdvers);
+		gameRequest.coulPion = initializeColor(gameResponse.validCoulPion, gameRequest.coulPion);
+		
    /* printf("The game is starded :\n");
     int sockIA  = connectionIA(portIA); // Connexion a l'IA
       
@@ -350,7 +321,8 @@ int main (int argc, char** argv) {
 			 
 		printf("Now we start revenge, good luck !\n\n");
 		
-		end = 0; //Initialize again to zero to the second game
+		end = 0;	//Initialize again to zero to the second game
+		i = 0;		//Initialize again the number of iteration to the second game
 
 		do {
 			i++;
@@ -369,7 +341,7 @@ int main (int argc, char** argv) {
 		} while (end != 1);
 
 		printf("\n-----------------------------------------------------------------------------\n");
-		printf("The first game is ended\n");
+		printf("The second game is ended\n");
 		printf("-Player %s : won match : %d / drew match : %d / lost match : %d\n",
 			 gameRequest.nomJoueur, wonMatch, drawMatch, lostMatch);
 		printf("-Player %s : won match : %d / drew match : %d / lost match : %d\n",

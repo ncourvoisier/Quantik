@@ -1,6 +1,41 @@
 #include "printMessageEnum.h"
 
 
+TCoul initializeColor(TValidCoul validColor, TCoul color) {
+	if (validColor) {
+    if (color == BLANC) {
+        color = NOIR;
+        printf("Color not available, you will play with black.\n");
+    } else {
+        color = BLANC;
+    		printf("Color not available, you will play with white.\n");
+    }
+	} else {
+   if (color == BLANC) {
+        printf("You will play with white and you start.\n");
+    } else {
+        printf("You will play with black and white start.\n");
+    }
+  }
+  return color;
+}
+
+void initializeGameResponse(TCodeRep err, char* opponent) {
+	switch(err) {
+    case ERR_OK : 
+        printf("You play against : %s\n", opponent);
+        break;
+    case ERR_PARTIE :
+        printf("Couldn't log into the game, invalid game request\n");
+        break;
+    case ERR_TYP :
+        printf("Couldn't log into the game, invalid type request\n");
+        break;
+    default :
+        printf("default\n");
+	} 
+}
+
 
 int responseError(TCodeRep err) {
 	switch(err) {
