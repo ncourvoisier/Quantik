@@ -43,11 +43,11 @@ int responseError(TCodeRep err) {
 	      break;
 	  case ERR_PARTIE :
 	      printf("Couldn't log into the game, invalid move\n");
-	      return 1;
+	      return 3;
 	      break;
 	  case ERR_TYP :
 	      printf("Couldn't log into the game, move\n");
-	      return 1;
+	      return 3;
 	      break;
 	  default :
 	      printf("default\n");
@@ -62,11 +62,11 @@ int responseValidCoup(TValCoup validCoup, char* name) {
 	      break;
 	  case TIMEOUT :
 	      printf("%s, your move isn't valid, you are over time to play.\n", name);
-	      return 1;
+	      return 3;
 	      break;
 	  case TRICHE :
 	      printf("%s, your move isn't valid, CHEATER\n", name);
-	      return 1;
+	      return 3;
 	      break;
 	  default :
 	      printf("default\n");
@@ -104,11 +104,11 @@ int responseAdversaireError(TCodeRep err) {
 		    break;
 		case ERR_PARTIE :
 		    printf("Couldn't log into the game, invalid move\n");
-		    return 1;
+		    return 3;
 		    break;
 		case ERR_TYP :
 		    printf("Couldn't log into the game, move\n");
-		    return 1;
+		    return 3;
 		    break;
 		default :
 		    printf("default\n");
@@ -123,11 +123,11 @@ int responseAdversaireValidCoup(TValCoup validCoup, char* name) {
 		    break;
 		case TIMEOUT :
 		    printf("%s took too long to play\n", name);
-		    return 1;
+		    return 3;
 		    break;
 		case TRICHE :
 		    printf("%s cheated\n", name);
-		    return 1;
+		    return 3;
 		    break;
 		default :
 		    printf("default\n");

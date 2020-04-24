@@ -17,6 +17,47 @@ void printHelp(char* name) {
     printf("usage : %s IPserver port name color(W/B) portIA\n", name);
 }
 
+void scorePlayer(int end) {
+	switch(end) {
+		case 1 :
+		 	wonMatchOpponent++;
+			lostMatch++;
+			break;
+		case 2 :
+			drawMatchOpponent++;
+			drawMatch++;
+			break;
+		case 3 :
+			lostMatchOpponent++;
+			wonMatch++;
+			break;
+		default :
+			printf("default score");
+	}
+}
+
+void scoreOpponent(int end) {
+	switch(end) {
+		case 1 :
+		 	wonMatch++;
+			lostMatchOpponent++;
+			break;
+		case 2 :
+			drawMatch++;
+			drawMatchOpponent++;
+			break;
+		case 3 :
+			lostMatch++;
+			wonMatchOpponent++;
+			break;
+		default :
+			printf("default score");
+	}
+}
+
+
+
+
 int playFirst(int sock, int end, int err, int i, int x, int y, int p, int c, TCoupReq coupRepAdversaire, TCoupReq coupReq, TCoupRep coupResponse, TCoupRep coupResponseAdversaire, TPartieReq gameRequest, TPartieRep gameResponse) {
 	printf("-----------------------------------------------------------------------------\n");
 	printf ("\n\nplayFirst Iteration %d\n", i);
@@ -47,30 +88,17 @@ int playFirst(int sock, int end, int err, int i, int x, int y, int p, int c, TCo
 	
 	end = responseError(coupResponse.err);
 	if (end != 0) {
-		lostMatch++;
-		wonMatchOpponent++;
+		scoreOpponent(end);
 		return end;
 	}
 	end = responseValidCoup(coupResponse.validCoup, gameRequest.nomJoueur);
 	if (end != 0) {
-		lostMatch++;
-		wonMatchOpponent++;
+		scoreOpponent(end);
 		return end;
 	}
 	end = responseContinuerAJouer(coupResponse.propCoup, gameRequest.nomJoueur);
-	if (end == 1) {
-		wonMatch++;
-		lostMatchOpponent++;
-		return end;
-	}
-	if (end == 2) {
-		drawMatch++;
-		drawMatchOpponent++;
-		return end;
-	}
-	if (end == 3) {
-		lostMatch++;
-		wonMatchOpponent++;
+	if (end != 0) {
+		scoreOpponent(end);
 		return end;
 	}
 	
@@ -81,30 +109,17 @@ int playFirst(int sock, int end, int err, int i, int x, int y, int p, int c, TCo
 	
 	end = responseAdversaireError(coupResponseAdversaire.err);
 	if (end != 0) {
-		lostMatchOpponent++;
-		wonMatch++;
+		scorePlayer(end);
 		return end;
 	}
 	end = responseAdversaireValidCoup(coupResponseAdversaire.validCoup, gameResponse.nomAdvers);
 	if (end != 0) {
-		lostMatchOpponent++;
-		wonMatch++;
+		scorePlayer(end);
 		return end;
 	}
 	end = responseAdversairePropCoup(coupResponseAdversaire.propCoup, gameResponse.nomAdvers);
-	if (end == 1) {
-		wonMatchOpponent++;
-		lostMatch++;
-		return end;
-	}
-	if (end == 2) {
-		drawMatchOpponent++;
-		drawMatch++;
-		return end;
-	}
-	if (end == 3) {
-		lostMatchOpponent++;
-		wonMatch++;
+	if (end != 0) {
+		scorePlayer(end);
 		return end;
 	}
 	
@@ -130,30 +145,17 @@ int playSecond(int sock, int end, int err, int i, int x, int y, int p, int c, TC
 	
 	end = responseAdversaireError(coupResponseAdversaire.err);
 	if (end != 0) {
-		lostMatchOpponent++;
-		wonMatch++;
+		scorePlayer(end);
 		return end;
 	}
 	end = responseAdversaireValidCoup(coupResponseAdversaire.validCoup, gameResponse.nomAdvers);
 	if (end != 0) {
-		lostMatchOpponent++;
-		wonMatch++;
+		scorePlayer(end);
 		return end;
 	}
 	end = responseAdversairePropCoup(coupResponseAdversaire.propCoup, gameResponse.nomAdvers);
-	if (end == 1) {
-		wonMatchOpponent++;
-		lostMatch++;
-		return end;
-	}
-	if (end == 2) {
-		drawMatchOpponent++;
-		drawMatch++;
-		return end;
-	}
-	if (end == 3) {
-		lostMatchOpponent++;
-		wonMatch++;
+	if (end != 0) {
+		scorePlayer(end);
 		return end;
 	}
 	
@@ -195,30 +197,17 @@ int playSecond(int sock, int end, int err, int i, int x, int y, int p, int c, TC
 	
 	end = responseError(coupResponse.err);
 	if (end != 0) {
-		lostMatch++;
-		wonMatchOpponent++;
+		scoreOpponent(end);
 		return end;
 	}
 	end = responseValidCoup(coupResponse.validCoup, gameRequest.nomJoueur);
 	if (end != 0) {
-		lostMatch++;
-		wonMatchOpponent++;
+		scoreOpponent(end);
 		return end;
 	}
 	end = responseContinuerAJouer(coupResponse.propCoup, gameRequest.nomJoueur);
-	if (end == 1) {
-		wonMatch++;
-		lostMatchOpponent++;
-		return end;
-	}
-	if (end == 2) {
-		drawMatch++;
-		drawMatchOpponent++;
-		return end;
-	}
-	if (end == 3) {
-		lostMatch++;
-		wonMatchOpponent++;
+	if (end != 0) {
+		scoreOpponent(end);
 		return end;
 	}
 	return end;
