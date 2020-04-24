@@ -39,6 +39,10 @@ int main (int argc, char** argv) {
     gameRequest.idReq = PARTIE;
     strcpy(gameRequest.nomJoueur, playerName);
 
+		printf("-----------------------------------------------------------------------------\n");
+		printf("Welcome to Quantik !\n");
+
+
     err = send(sock, &gameRequest, sizeof(TPartieReq),0);
     printError(err, "(player) send error with the initialize game request\n", sock);
 
@@ -95,6 +99,13 @@ int main (int argc, char** argv) {
     }  */
     
     
+    int wonMatch = 0;										// The number of match won for the player 
+    int drawMatch = 0;									// The number of match drew for the player
+    int lostMatch = 0;									// The number of match lost for the player
+    int wonMatchOpponent = 0;						// The number of match won for the opponent player
+    int drawMatchOpponent = 0;					// The number of match drew for the opponent player
+    int lostMatchOpponent = 0; 					// The number of match lost for the opponent player
+    
     int end = 0; 												//if the game is ended
     int i = 0; 													//iteration of the loop
     int x; 															//coordinate in line choose
@@ -112,6 +123,7 @@ int main (int argc, char** argv) {
 			
 			if (gameRequest.coulPion == BLANC) {
 				
+				printf("-----------------------------------------------------------------------------\n");
 				printf ("\n\nIteration %d\n", i);
 				printf("\nChoisir x (0,1,2,3) :\n");
 				scanf("%d", &x);
@@ -130,33 +142,81 @@ int main (int argc, char** argv) {
 				
 				coupReq = requeteCoup(COUP, 1, estBloque, tpion, tcase, propCoup);
 				
-				printf("SEND BLANC\n");
+				//printf("SEND BLANC\n");
 				err = 0;
 				err = send(sock, &coupReq, sizeof(TCoupReq),0);
 				printError(err, "(player) send error with the game request of one move\n", sock);
 				
-			 	printf("RECV REPONSE VALIDE BLANC\n");
+			 	//printf("RECV REPONSE VALIDE BLANC\n");
 				err = 0;
 				err = recv(sock, &coupResponse, sizeof(TCoupRep),0);
 				printError(err, "(player) recv error with the game response of one move\n", sock);
 				
 				end = responseError(coupResponse.err);
+				if (end != 0) {
+					lostMatch++;
+					wonMatchOpponent++;
+					break;
+				}
 				end = responseValidCoup(coupResponse.validCoup, gameRequest.nomJoueur);
+				if (end != 0) {
+					lostMatch++;
+					wonMatchOpponent++;
+					break;
+				}
 				end = responseContinuerAJouer(coupResponse.propCoup, gameRequest.nomJoueur);
+				if (end == 1) {
+					wonMatch++;
+					lostMatchOpponent++;
+					break;
+				}
+				if (end == 2) {
+					drawMatch++;
+					drawMatchOpponent++;
+					break;
+				}
+				if (end == 3) {
+					lostMatch++;
+					wonMatchOpponent++;
+					break;
+				}
 				
 				err = 0;
 				printf("Waiting the player to play...\n");
-				printf("RECV COUV VALIDE ADVERSAIRE BLANC\n");
+				//printf("RECV COUV VALIDE ADVERSAIRE BLANC\n");
 				err = recv(sock, &coupResponseAdversaire, sizeof(TCoupRep),0);
 				printError(err, "(player) recv error with the opponent move response\n", sock);
 				
-				printf("valid adv[%d,%d]",coupResponseAdversaire.err, coupResponseAdversaire.validCoup);
 				end = responseAdversaireError(coupResponseAdversaire.err);
+				if (end != 0) {
+					lostMatchOpponent++;
+					wonMatch++;
+					break;
+				}
 				end = responseAdversaireValidCoup(coupResponseAdversaire.validCoup, gameResponse.nomAdvers);
+				if (end != 0) {
+					lostMatchOpponent++;
+					wonMatch++;
+					break;
+				}
 				end = responseAdversairePropCoup(coupResponseAdversaire.propCoup, gameResponse.nomAdvers);
+				if (end == 1) {
+					wonMatchOpponent++;
+					lostMatch++;
+					break;
+				}
+				if (end == 2) {
+					drawMatchOpponent++;
+					drawMatch++;
+					break;
+				}
+				if (end == 3) {
+					lostMatchOpponent++;
+					wonMatch++;
+					break;
+				}
 				
-				
-				printf("RECV COUP ADV BLANC\n");
+				//printf("RECV COUP ADV BLANC\n");
 				err = recv(sock, &coupRepAdversaire, sizeof(TCoupReq),0);
 				printError(err, "(player) recv error with the opponent move\n", sock);
 
@@ -165,7 +225,7 @@ int main (int argc, char** argv) {
 				int pa = pionToInt(coupRepAdversaire.pion.typePion);
 				int ca = coupRepAdversaire.propCoup;
 				
-				printf("\n[x,y,p,c]\n[%d,%d,%d,%d]\n", xa, ya, pa, ca);
+				printf("[%d,%d,%d,%d]\n", xa, ya, pa, ca);
 			
 			}
 			
@@ -174,19 +234,44 @@ int main (int argc, char** argv) {
 			
 			if (gameRequest.coulPion == NOIR) {
 				
+				printf("-----------------------------------------------------------------------------\n");
 				printf("\n\nIteration %d\n", i);
 				
-				printf("RECV COUV VALIDE ADVERSAIRE NOIR\n");
+				//printf("RECV COUV VALIDE ADVERSAIRE NOIR\n");
 				err = 0;
 				err = recv(sock, &coupResponseAdversaire, sizeof(TCoupRep),0);
 				printError(err, "(player) recv error with the opponent move response\n", sock);
 				
-				printf("valid adv[%d,%d]",coupResponseAdversaire.err, coupResponseAdversaire.validCoup);
 				end = responseAdversaireError(coupResponseAdversaire.err);
+				if (end != 0) {
+					lostMatchOpponent++;
+					wonMatch++;
+					break;
+				}
 				end = responseAdversaireValidCoup(coupResponseAdversaire.validCoup, gameResponse.nomAdvers);
+				if (end != 0) {
+					lostMatchOpponent++;
+					wonMatch++;
+					break;
+				}
 				end = responseAdversairePropCoup(coupResponseAdversaire.propCoup, gameResponse.nomAdvers);
+				if (end == 1) {
+					wonMatchOpponent++;
+					lostMatch++;
+					break;
+				}
+				if (end == 2) {
+					drawMatchOpponent++;
+					drawMatch++;
+					break;
+				}
+				if (end == 3) {
+					lostMatchOpponent++;
+					wonMatch++;
+					break;
+				}
 				
-				printf("RECV COUP ADV NOIR \n");
+				//printf("RECV COUP ADV NOIR \n");
 				err = 0;
 				err = recv(sock, &coupRepAdversaire, sizeof(TCoupReq),0);
 				printError(err, "(player) recv error with the opponent move\n", sock);
@@ -196,7 +281,7 @@ int main (int argc, char** argv) {
 				int pa = pionToInt(coupRepAdversaire.pion.typePion);
 				int ca = coupRepAdversaire.propCoup;
 				
-				printf("\n[x,y,p,c]\n[%d,%d,%d,%d]\n", xa, ya, pa, ca);
+				printf("[%d,%d,%d,%d]\n", xa, ya, pa, ca);
 				
 				printf("Choisir x (0,1,2,3) :\n");
 				scanf("%d", &x);
@@ -214,24 +299,60 @@ int main (int argc, char** argv) {
 				bool estBloque = false;
 				coupReq = requeteCoup(COUP, 1, estBloque, tpion, tcase, propCoup);
 				
-				printf("SEND NOIR\n");
+				//printf("SEND NOIR\n");
 				err = 0;
 				err = send(sock, &coupReq, sizeof(TCoupReq),0);
 				printError(err, "(player) send error with the game request of one move\n", sock);
 				
 			 	printf("Waiting the player to play...\n");
-				printf("RECV REPONSE COUP NOIR\n");
+				//printf("RECV REPONSE COUP NOIR\n");
 				err = 0;
 				err = recv(sock, &coupResponse, sizeof(TCoupRep),0);
 				printError(err, "(player) recv error with the game response of one move\n", sock);
 				
-				responseError(coupResponse.err);
+				end = responseError(coupResponse.err);
+				if (end != 0) {
+					lostMatch++;
+					wonMatchOpponent++;
+					break;
+				}
 				end = responseValidCoup(coupResponse.validCoup, gameRequest.nomJoueur);
+				if (end != 0) {
+					lostMatch++;
+					wonMatchOpponent++;
+					break;
+				}
 				end = responseContinuerAJouer(coupResponse.propCoup, gameRequest.nomJoueur);
+				if (end == 1) {
+					wonMatch++;
+					lostMatchOpponent++;
+					break;
+				}
+				if (end == 2) {
+					drawMatch++;
+					drawMatchOpponent++;
+					break;
+				}
+				if (end == 3) {
+					lostMatch++;
+					wonMatchOpponent++;
+					break;
+				}
 						
 			}
 		
 		} while (end != 1);
+		
+		
+		printf("\n-----------------------------------------------------------------------------\n");
+		printf("The first game is ended\n");
+		printf("-Player %s : won match : %d / drew match : %d / lost match : %d\n",
+			 gameRequest.nomJoueur, wonMatch, drawMatch, lostMatch);
+		printf("-Player %s : won match : %d / drew match : %d / lost match : %d\n",
+			 gameResponse.nomAdvers, wonMatchOpponent, drawMatchOpponent, lostMatchOpponent);
+			 
+		printf("Now we start revenge, good luck !\n");
+		
 
     shutdown(sock, SHUT_RDWR); close(sock);
     return 0;

@@ -2,17 +2,17 @@
 
 
 
-
-
 int responseError(TCodeRep err) {
 	switch(err) {
 		case ERR_OK :
 	      break;
 	  case ERR_PARTIE :
 	      printf("Couldn't log into the game, invalid move\n");
+	      return 1;
 	      break;
 	  case ERR_TYP :
 	      printf("Couldn't log into the game, move\n");
+	      return 1;
 	      break;
 	  default :
 	      printf("default\n");
@@ -27,11 +27,11 @@ int responseValidCoup(TValCoup validCoup, char* name) {
 	      break;
 	  case TIMEOUT :
 	      printf("%s, your move isn't valid, you are over time to play.\n", name);
-	      //end = 1;
+	      return 1;
 	      break;
 	  case TRICHE :
 	      printf("%s, your move isn't valid, CHEATER\n", name);
-	      //end = 1;
+	      return 1;
 	      break;
 	  default :
 	      printf("default\n");
@@ -46,12 +46,15 @@ int responseContinuerAJouer(TPropCoup coup, char* name) {
 			break;
 		case GAGNE :
 			printf("%s, you won !\n", name);
+			return 1;
 			break;
 		case NUL :
 			printf("%s, you drew\n", name);
+			return 2;
 			break;
 		case PERDU :
 			printf("%s, you lost !\n", name);
+			return 3;
 			break;
 		default :
 		 printf("default\n");
@@ -66,9 +69,11 @@ int responseAdversaireError(TCodeRep err) {
 		    break;
 		case ERR_PARTIE :
 		    printf("Couldn't log into the game, invalid move\n");
+		    return 1;
 		    break;
 		case ERR_TYP :
 		    printf("Couldn't log into the game, move\n");
+		    return 1;
 		    break;
 		default :
 		    printf("default\n");
@@ -83,11 +88,11 @@ int responseAdversaireValidCoup(TValCoup validCoup, char* name) {
 		    break;
 		case TIMEOUT :
 		    printf("%s took too long to play\n", name);
-		    //end = 1;
+		    return 1;
 		    break;
 		case TRICHE :
 		    printf("%s cheated\n", name);
-		    //end = 1;
+		    return 1;
 		    break;
 		default :
 		    printf("default\n");
@@ -102,12 +107,15 @@ int responseAdversairePropCoup(TPropCoup coup, char* name) {
 			break;
 		case GAGNE :
 			printf("The opposing player, %s, won\n", name);
+			return 1;
 			break;
 		case NUL :
 			printf("You drew against %s\n", name);
+			return 2;
 			break;
 		case PERDU :
 			printf("The opposing player, %s, lost\n", name);
+			return 3;
 			break;
 		default :
 		 printf("default\n");
