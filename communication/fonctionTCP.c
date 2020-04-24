@@ -30,7 +30,7 @@ int socketServeur(ushort nPort) {
   
   sockConx = socket(AF_INET, SOCK_STREAM, 0);
   if (sockConx < 0) {
-    perror("(serveurTCP) erreur de socket");
+    perror("(serveurTCP) erreur on socket");
     return -2;
   }
   
@@ -44,7 +44,7 @@ int socketServeur(ushort nPort) {
 
   err = bind(sockConx, (struct sockaddr *)&addServ, sizeAddr);
   if (err < 0) {
-    perror("(serveurTCP) erreur sur le bind");
+    perror("(serveurTCP) erreur on bind");
     close(sockConx);
     return -3;
   }
@@ -67,31 +67,31 @@ int socketServeur(ushort nPort) {
 
 
 int socketClient(char* nomMachine, ushort nPort) {
-  char chaine[TAIL_BUF];   /* buffer */
-  int sock;                /* descripteur de la socket locale */
-  int port;                /* variables de lecture */
-  int err;                 /* code d'erreur */
-  char* ipMachServ;        /* pour solution inet_aton */
-  char* nomMachServ;       /* pour solution getaddrinfo */
-  struct sockaddr_in addSockServ;  
-                           /* adresse de la socket connexion du serveur */
-  struct addrinfo hints;   /* parametre pour getaddrinfo */
-  struct addrinfo *result; /* les adresses obtenues par getaddrinfo */ 
-  socklen_t sizeAdd;       /* taille d'une structure pour l'adresse de socket */
+  char chaine[TAIL_BUF];   				/* buffer */
+  int sock;                				/* descripteur de la socket locale */
+  int port;                				/* variables de lecture */
+  int err;                 				/* code d'erreur */
+  char* ipMachServ;        				/* pour solution inet_aton */
+  char* nomMachServ;       				/* pour solution getaddrinfo */
+  struct sockaddr_in addSockServ; /* adresse de la socket connexion du serveur */
+  struct addrinfo hints;   				/* parametre pour getaddrinfo */
+  struct addrinfo *result; 				/* les adresses obtenues par getaddrinfo */ 
+  socklen_t sizeAdd;       				/* taille d'une structure pour l'adresse de socket */
   
-  ipMachServ = nomMachine; nomMachServ = nomMachine;
+  ipMachServ = nomMachine; 
+  nomMachServ = nomMachine;
   port = nPort;
 
   sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock < 0) {
-    perror("(client) erreur sur la creation de socket");
+    perror("(client) error during the creation of the socket\n");
     return -2;
   }
   
   addSockServ.sin_family = AF_INET;
   err = inet_aton(ipMachServ, &addSockServ.sin_addr);
   if (err == 0) { 
-    perror("(client) erreur obtention IP serveur");
+    perror("(client) error while obtaining the server IP\n");
     close(sock);
     return -3;
   }
@@ -124,20 +124,17 @@ int socketClient(char* nomMachine, ushort nPort) {
   addSockServ = *(struct sockaddr_in*) result->ai_addr;
   sizeAdd = result->ai_addrlen;
   */
-			     
-  /* 
-   * connexion au serveur 
-   */
+	
   err = connect(sock, (struct sockaddr *)&addSockServ, sizeAdd); 
   if (err < 0) {
-    perror("(client) erreur a la connection de socket");
+    perror("(client) socket connection error\n");
     close(sock);
     return -4;
   }
   
   int enable = 1;
   if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
-  	printf("ERROR : SETSOCKOPT");
+  	printf("(client) eror while setsockopt\n");
   	return -5;
   }
 	

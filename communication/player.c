@@ -11,12 +11,20 @@ int lostMatch = 0;									// The number of match lost for the player
 int wonMatchOpponent = 0;						// The number of match won for the opponent player
 int drawMatchOpponent = 0;					// The number of match drew for the opponent player
 int lostMatchOpponent = 0; 					// The number of match lost for the opponent player
-    
 
+ 
+/**
+ * Fonction who print a help message to launch the program
+ * @param char* name the name of the program
+ */
 void printHelp(char* name) {
     printf("usage : %s IPserver port name color(W/B) portIA\n", name);
 }
 
+/**
+ * Fonction who make a score of the two player for the current player
+ * @param int end a code to determinate the winner
+ */
 void scorePlayer(int end) {
 	switch(end) {
 		case 1 :
@@ -36,6 +44,10 @@ void scorePlayer(int end) {
 	}
 }
 
+/**
+ * Fonction who make a score of the two player for the opponent player
+ * @param int end a code to determinate the winner
+ */
 void scoreOpponent(int end) {
 	switch(end) {
 		case 1 :
@@ -55,10 +67,26 @@ void scoreOpponent(int end) {
 	}
 }
 
-
-
-
-int playFirst(int sock, int end, int err, int i, int x, int y, int p, int c, TCoupReq coupRepAdversaire, TCoupReq coupReq, TCoupRep coupResponse, TCoupRep coupResponseAdversaire, TPartieReq gameRequest, TPartieRep gameResponse) {
+/**
+ * Function that plays the player if he plays first
+ * @param int sock the socket to connect with the game server
+ * @param int i the number of move
+ * @param int err a code of error
+ * @param TPartieReq gameRequest the request of the game
+ * @param TPartieRep gameResponse the response of the game request
+ */
+int playFirst(int sock, int i, int err, TPartieReq gameRequest, TPartieRep gameResponse) {
+	
+	int end = 0; 												// If the game is ended
+  int x; 															// Coordinate in line choose
+  int y; 															// Coordinate in column choose
+  int p; 															// Pawn choose 
+  int c; 															// If the move is winner, looser...
+	TCoupReq coupRepAdversaire;					// Opponent request
+	TCoupReq coupReq;										// Us request
+	TCoupRep coupResponse;							// Us response
+	TCoupRep coupResponseAdversaire;		// Opponent response
+		
 	printf("-----------------------------------------------------------------------------\n");
 	printf ("\n\nplayFirst Iteration %d\n", i);
 	printf("\nChoisir x (0,1,2,3) :\n");
@@ -135,7 +163,26 @@ int playFirst(int sock, int end, int err, int i, int x, int y, int p, int c, TCo
 	return end;
 }
 
-int playSecond(int sock, int end, int err, int i, int x, int y, int p, int c, TCoupReq coupRepAdversaire, TCoupReq coupReq, TCoupRep coupResponse, TCoupRep coupResponseAdversaire, TPartieReq gameRequest, TPartieRep gameResponse) {
+/**
+ * Function that plays the player if he plays second
+ * @param int sock the socket to connect with the game server
+ * @param int i the number of move
+ * @param int err a code of error
+ * @param TPartieReq gameRequest the request of the game
+ * @param TPartieRep gameResponse the response of the game request
+ */
+int playSecond(int sock, int i,  int err, TPartieReq gameRequest, TPartieRep gameResponse) {
+	
+	int end = 0; 												// If the game is ended
+  int x; 															// Coordinate in line choose
+  int y; 															// Coordinate in column choose
+  int p; 															// Pawn choose 
+  int c; 															// If the move is winner, looser...
+	TCoupReq coupRepAdversaire;					// Opponent request
+	TCoupReq coupReq;										// Us request
+	TCoupRep coupResponse;							// Us response
+	TCoupRep coupResponseAdversaire;		// Opponent response
+	
 	printf("-----------------------------------------------------------------------------\n");
 	printf("\n\nplaySecond Iteration %d\n", i);
 	
@@ -213,7 +260,9 @@ int playSecond(int sock, int end, int err, int i, int x, int y, int p, int c, TC
 	return end;
 }
 
-
+/**
+ * Main fonction
+ */
 int main (int argc, char** argv) {
 
     if (argc != 6) {
@@ -221,16 +270,17 @@ int main (int argc, char** argv) {
         return -1;
     }
 
-    char* ipServeur = argv[1];
-    char* playerName = argv[3];
-    char* color = argv[4];
-    int port = atoi(argv[2]);
-    int sock = socketClient(ipServeur, port);
-    //msg erreur TO DO
-    int err;
-    int portIA = atoi(argv[5]);
-    TPartieReq gameRequest;
-    TPartieRep gameResponse;
+    char* ipServeur = argv[1];			// The ip of the distant server
+    char* playerName = argv[3];			// The name of the player
+    char* color = argv[4];					// The color choose by the player
+    int port = atoi(argv[2]);				// The port of the distant server
+    int sock;												// The socket to connect the distant server
+    int err;												// The error code for future fonction
+    int portIA = atoi(argv[5]);			// The port of the IA
+    int i = 0;											// The number of loop
+		int end = 0;										// If the game is ended
+    TPartieReq gameRequest;					// Request to create a game
+    TPartieRep gameResponse;				// Response of the request 'create a game'
 
     if(!strcmp(color,"W")) {
         gameRequest.coulPion = BLANC;
@@ -240,6 +290,10 @@ int main (int argc, char** argv) {
         printHelp(argv[0]);
         return -2;
     }
+    
+    
+    sock = socketClient(ipServeur, port);
+    printError(sock, "(player) error during the creation of the socketClient\n", sock);
     
     gameRequest.idReq = PARTIE;
     strcpy(gameRequest.nomJoueur, playerName);
@@ -274,27 +328,19 @@ int main (int argc, char** argv) {
     	return -1;
     }  */
     
-    int end = 0; 												//if the game is ended
-    int i = 0; 													//iteration of the loop
-    int x; 															//coordinate in line choose
-    int y; 															//coordinate in column choose
-    int p; 															//pawn choose 
-    int c; 															//if the move is winner, looser...
-		TCoupReq coupRepAdversaire;					//opponent request
-		TCoupReq coupReq;										//us request
-		TCoupRep coupResponse;							//us response
-		TCoupRep coupResponseAdversaire;		//opponent response
+    //(int sock,  int i, int err, TPartieReq gameRequest, TPartieRep gameResponse) {
+	
 		
 		do {
 			i++;
 			if (gameRequest.coulPion == BLANC) {
-				end = playFirst(sock, end, err, i, x, y, p, c, coupRepAdversaire, coupReq, coupResponse, coupResponseAdversaire, gameRequest, gameResponse);
+				end = playFirst(sock, i, err, gameRequest, gameResponse);
 				if (end != 0) {
 					break;
 				}
 			}
 			if (gameRequest.coulPion == NOIR) {
-				end = playSecond(sock, end, err, i, x, y, p, c, coupRepAdversaire, coupReq, coupResponse, coupResponseAdversaire, gameRequest, gameResponse);
+				end = playSecond(sock, i, err, gameRequest, gameResponse);
 				if (end != 0) {
 					break;
 				}
@@ -316,13 +362,13 @@ int main (int argc, char** argv) {
 		do {
 			i++;
 			if (gameRequest.coulPion == BLANC) {
-				end = playSecond(sock, end, err, i, x, y, p, c, coupRepAdversaire, coupReq, coupResponse, coupResponseAdversaire, gameRequest, gameResponse);
+				end = playSecond(sock, i, err, gameRequest, gameResponse);
 				if (end != 0) {
 					break;
 				}
 			}
 			if (gameRequest.coulPion == NOIR) {
-				end = playFirst(sock, end, err, i, x, y, p, c, coupRepAdversaire, coupReq, coupResponse, coupResponseAdversaire, gameRequest, gameResponse);
+				end = playFirst(sock, i, err, gameRequest, gameResponse);
 				if (end != 0) {
 					break;
 				}
