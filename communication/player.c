@@ -75,7 +75,7 @@ void scoreOpponent(int end) {
  * @param TPartieReq gameRequest the request of the game
  * @param TPartieRep gameResponse the response of the game request
  */
-int playFirst(int sock, int i, int err, TPartieReq gameRequest, TPartieRep gameResponse) {
+int playFirst(int sock, int sockIA, int i, int err, TPartieReq gameRequest, TPartieRep gameResponse) {
 	
 	int end = 0; 												// If the game is ended
   int x; 															// Coordinate in line choose
@@ -89,15 +89,25 @@ int playFirst(int sock, int i, int err, TPartieReq gameRequest, TPartieRep gameR
 		
 	printf("-----------------------------------------------------------------------------\n");
 	printf ("\n\nplayFirst Iteration %d\n", i);
-	printf("\nChoisir x (0,1,2,3) :\n");
-	scanf("%d", &x);
-	printf("Choisir y (0,1,2,3) :\n");
-	scanf("%d", &y);
-	printf("Choisir p (0,1,2,3) :\n");
-	scanf("%d", &p);
-	printf("Propirete coup (0,1,2,3) : \n");
-	scanf("%d", &c);
-	printf("\n\n");
+	
+	x = recvIA(sockIA);
+  if (x == -1) {
+  	return -1;
+  }
+	y = recvIA(sockIA);
+  if (y == -1) {
+  	return -1;
+  }
+  p = recvIA(sockIA);
+  if (p == -1) {
+  	return -1;
+  }
+  c = recvIA(sockIA);
+  if (c == -1) {
+  	return -1;
+  }
+  
+	printf("IA Result : [%d,%d,%d,%d]\n", x, y, p, c);
 	
 	TPion tpion = pionToTPion(p, gameRequest.coulPion);
 	TCase tcase = positionToTCase(x, y);
@@ -160,6 +170,23 @@ int playFirst(int sock, int i, int err, TPartieReq gameRequest, TPartieRep gameR
 	int ca = coupRepAdversaire.propCoup;
 	
 	printf("[%d,%d,%d,%d]\n", xa, ya, pa, ca);
+	err = sendIA(xa, sockIA);
+  if (err == -1) {
+  	return -1;
+  }
+  err = sendIA(ya, sockIA);
+  if (err == -1) {
+  	return -1;
+  }
+  err = sendIA(pa, sockIA);
+  if (err == -1) {
+  	return -1;
+  }
+  err = sendIA(ca, sockIA);
+  if (err == -1) {
+  	return -1;
+  }
+  
 	return end;
 }
 
@@ -171,7 +198,7 @@ int playFirst(int sock, int i, int err, TPartieReq gameRequest, TPartieRep gameR
  * @param TPartieReq gameRequest the request of the game
  * @param TPartieRep gameResponse the response of the game request
  */
-int playSecond(int sock, int i,  int err, TPartieReq gameRequest, TPartieRep gameResponse) {
+int playSecond(int sock, int sockIA, int i,  int err, TPartieReq gameRequest, TPartieRep gameResponse) {
 	
 	int end = 0; 												// If the game is ended
   int x; 															// Coordinate in line choose
@@ -217,15 +244,41 @@ int playSecond(int sock, int i,  int err, TPartieReq gameRequest, TPartieRep gam
 	
 	printf("[%d,%d,%d,%d]\n", xa, ya, pa, ca);
 	
-	printf("Choisir x (0,1,2,3) :\n");
-	scanf("%d", &x);
-	printf("Choisir y (0,1,2,3) :\n");
-	scanf("%d", &y);
-	printf("Choisir p (0,1,2,3) :\n");
-	scanf("%d", &p);
-	printf("Propirete coup (0,1,2,3) : \n");
-	scanf("%d", &c);
-	
+	err = sendIA(xa, sockIA);
+  if (err == -1) {
+  	return -1;
+  }
+  err = sendIA(ya, sockIA);
+  if (err == -1) {
+  	return -1;
+  }
+  err = sendIA(pa, sockIA);
+  if (err == -1) {
+  	return -1;
+  }
+  err = sendIA(ca, sockIA);
+  if (err == -1) {
+  	return -1;
+  }
+  
+  x = recvIA(sockIA);
+  if (x == -1) {
+  	return -1;
+  }
+	y = recvIA(sockIA);
+  if (y == -1) {
+  	return -1;
+  }
+  p = recvIA(sockIA);
+  if (p == -1) {
+  	return -1;
+  }
+  c = recvIA(sockIA);
+  if (c == -1) {
+  	return -1;
+  }
+  
+	printf("IA Result : [%d,%d,%d,%d]\n", x, y, p, c);
 	
 	TPion tpion = pionToTPion(p, gameRequest.coulPion);
 	TCase tcase = positionToTCase(x, y);
@@ -312,35 +365,31 @@ int main (int argc, char** argv) {
 		initializeGameResponse(gameResponse.err, gameResponse.nomAdvers);
 		gameRequest.coulPion = initializeColor(gameResponse.validCoulPion, gameRequest.coulPion);
 		
-   /* printf("The game is starded :\n");
+    printf("The first game is starded :\n");
     int sockIA  = connectionIA(portIA); // Connexion a l'IA
-      
-    // Envoie au java
-    int ent = 12;
-    err = sendIA(ent, sockIA);
+    int startIA = -1;
+    if (gameRequest.coulPion == NOIR) {
+    	startIA = 1;
+    } else {
+    	startIA = 0;
+    }
+    
+    // Send into java who's start
+    err = sendIA(startIA, sockIA);
     if (err == -1) {
     	return -1;
     }
-    
-    // Reception du java
-    int recu = recvIA(sockIA);
-    if (recu == -1) {
-    	return -1;
-    }  */
-    
-    //(int sock,  int i, int err, TPartieReq gameRequest, TPartieRep gameResponse) {
-	
 		
 		do {
 			i++;
 			if (gameRequest.coulPion == BLANC) {
-				end = playFirst(sock, i, err, gameRequest, gameResponse);
+				end = playFirst(sock, sockIA, i, err, gameRequest, gameResponse);
 				if (end != 0) {
 					break;
 				}
 			}
 			if (gameRequest.coulPion == NOIR) {
-				end = playSecond(sock, i, err, gameRequest, gameResponse);
+				end = playSecond(sock, sockIA, i, err, gameRequest, gameResponse);
 				if (end != 0) {
 					break;
 				}
@@ -362,13 +411,13 @@ int main (int argc, char** argv) {
 		do {
 			i++;
 			if (gameRequest.coulPion == BLANC) {
-				end = playSecond(sock, i, err, gameRequest, gameResponse);
+				end = playSecond(sock, sockIA, i, err, gameRequest, gameResponse);
 				if (end != 0) {
 					break;
 				}
 			}
 			if (gameRequest.coulPion == NOIR) {
-				end = playFirst(sock, i, err, gameRequest, gameResponse);
+				end = playFirst(sock, sockIA, i, err, gameRequest, gameResponse);
 				if (end != 0) {
 					break;
 				}
