@@ -38,10 +38,11 @@ int port = -1;
     Game datas
 */
 PlayerData players[2];
+PlayerData *currentPlayer; //player currently playing
 int gameStarted = 0;
 int roundNumber = 1; // 1 for the first round, 2 for the second
-int playerNumber; //player currently playing
 int playerTimedOut = 0;
+
 
 /*
     Timer datas
@@ -221,29 +222,21 @@ int sendPlayingResponse(TCodeRep code, TValCoup val, TPropCoup prop) {
 
 void launchRound(int number) {
     initialiserPartie();
-    sprintf(logMessage, "Starting the round %i", number); printLog(INFO);
     roundNumber = number;
-    playerNumber = 1;
     if (roundNumber == 1) {
         if (players[0].color == BLANC) {
-            players[0].number = 1;
-            players[1].number = 2;
+            currentPlayer = &players[0];
         }
         else {
-            players[0].number = 2;
-            players[1].number = 1;
+            currentPlayer = &players[1];
         }
     }
     else {
-        if (players[0].color == BLANC) {
-            players[0].number = 2;
-            players[1].number = 1;
-        }
-        else {
-            players[0].number = 1;
-            players[1].number = 2;
-        }
+        currentPlayer = currentPlayer->opponent;
     }
+    currentPlayer->number = 1;
+    currentPlayer->opponent->number = 2;
+    sprintf(logMessage, "Starting the round %i, player '%s' has number 1", number, currentPlayer->name); printLog(INFO);
 }
 
 
@@ -260,6 +253,7 @@ void launchGame() {
 
 
 void endGame() {
+    sprintf(logMessage, "End of the game"); printLog(INFO);
     if (timeout) {
         stopClockTimer();
     }
@@ -267,7 +261,8 @@ void endGame() {
 }
 
 
-void endRound() {
+void endRound(PlayerData *winner) {
+    sprintf(logMessage, "End of the round %i", roundNumber); printLog(INFO);
      if (roundNumber == 1) {
          roundNumber = 2;
          launchRound(2);
@@ -284,6 +279,7 @@ void endAction(PlayerData *player, TPropCoup moveProperty, TCoupReq playingReque
     }
 
     int err;
+    PlayerData *winner;
 
     switch (moveProperty) {
         case CONT:
@@ -291,17 +287,19 @@ void endAction(PlayerData *player, TPropCoup moveProperty, TCoupReq playingReque
             if (err <= 0) {
                 // TODO
             }
-            playerNumber = player->opponent->number;
+            currentPlayer = currentPlayer->opponent;
             return;
         case GAGNE:
-            player->score++;
+            winner = player;
             break;
         case PERDU:
-            player->opponent->score++;
+            winner = player->opponent;
             break;
+        case NUL:
+            winner = NULL;
     }
 
-    endRound();
+    endRound(winner);
 }
 
 
@@ -400,7 +398,8 @@ int handlePlayingRequest(PlayerData *player) {
         return 1;
     }
 
-    if (player->number != playerNumber) { // Not this player turn to play
+    if (player != currentPlayer) { // Not this player turn to play
+        sprintf(logMessage, "Player '%s' attempted to play out of his turn", player->name); printLog(DEBUG);
         return 1;
     }
 
@@ -422,10 +421,13 @@ int handlePlayingRequest(PlayerData *player) {
     }
 
     if (isValidMove) {
+        sprintf(logMessage, "Player '%s' move was accepted", player->name); printLog(INFO);
         sendPlayingResponse(ERR_OK, VALID, moveProperty);
         endAction(player, moveProperty, playingRequest);
         return 0;
     }
+
+    sprintf(logMessage, "Player '%s' move was refused", player->name); printLog(INFO);
 
     return 2;
 }
@@ -435,7 +437,7 @@ int handlePlayingRequest(PlayerData *player) {
     Called for every player action on his socket.
 */
 int handlePlayerAction(PlayerData *player) {
-    sprintf(logMessage, "action by player %i", player->id); printLog(DEBUG);
+    sprintf(logMessage, "Player %i performed an action", player->id); printLog(DEBUG);
 
     TIdReq idRequest;
     TCodeRep errorCode;
@@ -501,9 +503,9 @@ int handlePlayerAction(PlayerData *player) {
     Handling the signal sent by the timer process when it ends.
 */
 void timerOutSignalHandler() {
-    sprintf(logMessage, "Player %i timed out", playerNumber); printLog(INFO);
+    sprintf(logMessage, "Player '%s' timed out", currentPlayer->name); printLog(INFO);
     sendPlayingResponse(ERR_COUP, TIMEOUT, PERDU);
-    endRound();
+    endRound(currentPlayer->opponent);
 }
 
 
