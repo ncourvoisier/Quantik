@@ -263,6 +263,12 @@ void endGame() {
 
 void endRound(PlayerData *winner) {
     sprintf(logMessage, "End of the round %i", roundNumber); printLog(INFO);
+    if (winner == NULL) {
+        sprintf(logMessage, "Result: draw"); printLog(INFO);
+    }
+    else {
+        sprintf(logMessage, "Result: player '%s' won", winner->name); printLog(INFO);
+    }
      if (roundNumber == 1) {
          roundNumber = 2;
          launchRound(2);
@@ -273,7 +279,7 @@ void endRound(PlayerData *winner) {
 }
 
 
-void endAction(PlayerData *player, TPropCoup moveProperty, TCoupReq playingRequest) {
+void endAction(PlayerData *player, TPropCoup moveProperty, TCoupReq *playingRequest) {
     if (timeout) {
         resetClockTimer();
     }
@@ -283,7 +289,7 @@ void endAction(PlayerData *player, TPropCoup moveProperty, TCoupReq playingReque
 
     switch (moveProperty) {
         case CONT:
-            err = send(player->opponent->socket, &playingRequest, sizeof(TCoupReq), 0);
+            err = send(player->opponent->socket, playingRequest, sizeof(TCoupReq), 0);
             if (err <= 0) {
                 // TODO
             }
@@ -405,7 +411,7 @@ int handlePlayingRequest(PlayerData *player) {
 
     if (timeout && playerTimedOut) {
         sendPlayingResponse(ERR_COUP, TIMEOUT, PERDU);
-        endAction(player, PERDU, playingRequest);
+        endAction(player, PERDU, &playingRequest);
         return 0;
     }
 
@@ -423,7 +429,7 @@ int handlePlayingRequest(PlayerData *player) {
     if (isValidMove) {
         sprintf(logMessage, "Player '%s' move was accepted", player->name); printLog(INFO);
         sendPlayingResponse(ERR_OK, VALID, moveProperty);
-        endAction(player, moveProperty, playingRequest);
+        endAction(player, moveProperty, &playingRequest);
         return 0;
     }
 
