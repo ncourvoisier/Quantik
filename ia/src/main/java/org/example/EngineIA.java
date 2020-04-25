@@ -5,11 +5,25 @@ import org.jpl7.Query;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
+
 import java.util.Scanner;
 
+/**
+ * The class EngineIA make a connection with the player (file player.c)
+ * This class receive and send the move realize by the player
+ */
 public class EngineIA {
 
-
+    /**
+     * This function realize a communication with player when he plays in second
+     *
+     * @param g the Quantik grid
+     * @param i the number iteration
+     * @param DIS the DataInputStream to receive move of the opponent player
+     * @param DOS the DataOutputStream to send move of the opponent player
+     * @return an error message if he are an error or 0 if all is normal
+     * @throws Exception the exception to catch error with recv and send function
+     */
     public static int playSecond(Grille g, int i, DataInputStream DIS, DataOutputStream DOS) throws Exception {
         Scanner sc = new Scanner(System.in);
         int xSend;
@@ -27,7 +41,6 @@ public class EngineIA {
 
         g.printGrille();
 
-        System.out.println("CONTINUER OU PAS ?");
         continuerPartie = DIS.readInt();
         if (continuerPartie != 0) {
             return -1;
@@ -42,6 +55,9 @@ public class EngineIA {
         }
 
         g.addPawnInGrille(xRecv, yRecv, pRecv);
+
+        System.out.println("The opponent played :");
+        g.printGrille();
 
         System.out.println("Choisir x : (0,1,2,3)");
         xSend = Integer.parseInt(sc.next());
@@ -59,9 +75,22 @@ public class EngineIA {
 
         g.addPawnInGrille(xSend, ySend, pSend);
 
+        System.out.println("The grid after your move :");
+        g.printGrille();
+
         return 0;
     }
 
+    /**
+     * This function realize a communication with player when he plays in second
+     *
+     * @param g the Quantik grid
+     * @param i the number iteration
+     * @param DIS the DataInputStream to receive move of the opponent player
+     * @param DOS the DataOutputStream to send move of the opponent player
+     * @return an error message if he are an error or 0 if all is normal
+     * @throws Exception the exception to catch error with recv and send function
+     */
     public static int playFirst(Grille g, int i, DataInputStream DIS, DataOutputStream DOS) throws Exception {
 
         Scanner sc = new Scanner(System.in);
@@ -96,6 +125,9 @@ public class EngineIA {
 
         g.addPawnInGrille(xSend, ySend, pSend);
 
+        System.out.println("The grid after your move :");
+        g.printGrille();
+
         System.out.println("CONTINUER OU PAS ?");
         continuerPartie = DIS.readInt();
         if (continuerPartie != 0) {
@@ -111,10 +143,16 @@ public class EngineIA {
         }
 
         g.addPawnInGrille(xRecv, yRecv, pRecv);
+
+        System.out.println("The opponent played :");
+        g.printGrille();
         return 0;
     }
 
-
+    /**
+     * Main function to communicate with the player and the prolog file
+     * @param args the arguments array
+     */
     public static void main (String[] args) {
 
         int port = 2567;
@@ -131,16 +169,6 @@ public class EngineIA {
 
         g.printGrille();
 
-        int xSend;
-        int ySend;
-        int pSend;
-        int cSend;
-
-        int xRecv;
-        int yRecv;
-        int pRecv;
-        int cRecv;
-
         try{
             Socket sock = new Socket(addr,port);
             DataInputStream DIS = new DataInputStream(sock.getInputStream());
@@ -150,7 +178,6 @@ public class EngineIA {
 
             int end = 0;
             int i = 0;
-            int continuerPartie = 0;
 
             do {
                 i++;
@@ -194,10 +221,5 @@ public class EngineIA {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
-
-
-
     }
 }
