@@ -195,7 +195,7 @@ public class EngineIA {
                 }
             } while (end != 1) ;
 
-            System.out.println("FIN DE LA PREMIERE PARTIE\nDebut de la revange :\n");
+            System.out.println("FIN DE LA PREMIERE PARTIE\nDebut de la revanche :\n");
             end = 0;
             i = 0;
 

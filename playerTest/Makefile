@@ -24,10 +24,6 @@ printMessageEnum.o: printMessageEnum.c printMessageEnum.h
 
 player: player.c fonctionTCP.h fonctionTCP.o conversion.h conversion.o printMessageEnum.h printMessageEnum.o
 	gcc player.c -o player fonctionTCP.o conversion.o printMessageEnum.o $(LD_FLAGS)
-	
-	
-#quantikServerStudents: quantikServerStudents.c fonctionTCP.h fonctionTCP.o conversion.h conversion.o printMessageEnum.h printMessageEnum.o quantik-fPIC.o 
-#	gcc quantikServerStudents.c -o quantikServerStudents fonctionTCP.o conversion.o printMessageEnum.o quantik-fPIC.o 
 
 clean:
 	rm *~ ; rm -i \#* ; rm *.o; \
