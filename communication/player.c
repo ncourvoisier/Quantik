@@ -127,16 +127,28 @@ int playFirst(int sock, int sockIA, int i, int err, TPartieReq gameRequest, TPar
 	end = responseError(coupResponse.err);
 	if (end != 0) {
 		scoreOpponent(end);
+		err = sendIA(end, sockIA);
+		if (err == -1) {
+			return -1;
+		}
 		return end;
 	}
 	end = responseValidCoup(coupResponse.validCoup, gameRequest.nomJoueur);
 	if (end != 0) {
 		scoreOpponent(end);
+		err = sendIA(end, sockIA);
+		if (err == -1) {
+			return -1;
+		}
 		return end;
 	}
 	end = responseContinuerAJouer(coupResponse.propCoup, gameRequest.nomJoueur);
 	if (end != 0) {
 		scoreOpponent(end);
+		err = sendIA(end, sockIA);
+		if (err == -1) {
+			return -1;
+		}
 		return end;
 	}
 	
@@ -148,17 +160,33 @@ int playFirst(int sock, int sockIA, int i, int err, TPartieReq gameRequest, TPar
 	end = responseAdversaireError(coupResponseAdversaire.err);
 	if (end != 0) {
 		scorePlayer(end);
+		err = sendIA(end, sockIA);
+		if (err == -1) {
+			return -1;
+		}
 		return end;
 	}
 	end = responseAdversaireValidCoup(coupResponseAdversaire.validCoup, gameResponse.nomAdvers);
 	if (end != 0) {
 		scorePlayer(end);
+		err = sendIA(end, sockIA);
+		if (err == -1) {
+			return -1;
+		}
 		return end;
 	}
 	end = responseAdversairePropCoup(coupResponseAdversaire.propCoup, gameResponse.nomAdvers);
 	if (end != 0) {
 		scorePlayer(end);
+		err = sendIA(end, sockIA);
+		if (err == -1) {
+			return -1;
+		}
 		return end;
+	}
+	err = sendIA(end, sockIA);
+	if (err == -1) {
+		return -1;
 	}
 	
 	err = recv(sock, &coupRepAdversaire, sizeof(TCoupReq),0);
@@ -219,19 +247,40 @@ int playSecond(int sock, int sockIA, int i,  int err, TPartieReq gameRequest, TP
 	
 	end = responseAdversaireError(coupResponseAdversaire.err);
 	if (end != 0) {
+		err = sendIA(end, sockIA);
+		if (err == -1) {
+			return -1;
+		}
+		err = 0;
 		scorePlayer(end);
 		return end;
 	}
 	end = responseAdversaireValidCoup(coupResponseAdversaire.validCoup, gameResponse.nomAdvers);
 	if (end != 0) {
+		err = sendIA(end, sockIA);
+		if (err == -1) {
+			return -1;
+		}
+		err = 0;
 		scorePlayer(end);
 		return end;
 	}
 	end = responseAdversairePropCoup(coupResponseAdversaire.propCoup, gameResponse.nomAdvers);
 	if (end != 0) {
+		err = sendIA(end, sockIA);
+		if (err == -1) {
+			return -1;
+		}
+		err = 0;
 		scorePlayer(end);
 		return end;
 	}
+	
+	err = sendIA(end, sockIA);
+	if (err == -1) {
+		return -1;
+	}
+	err = 0;
 	
 	err = 0;
 	err = recv(sock, &coupRepAdversaire, sizeof(TCoupReq),0);
@@ -298,16 +347,31 @@ int playSecond(int sock, int sockIA, int i,  int err, TPartieReq gameRequest, TP
 	end = responseError(coupResponse.err);
 	if (end != 0) {
 		scoreOpponent(end);
+		err = sendIA(end, sockIA);
+		if (err == -1) {
+			return -1;
+		}
+		err = 0;
 		return end;
 	}
 	end = responseValidCoup(coupResponse.validCoup, gameRequest.nomJoueur);
 	if (end != 0) {
 		scoreOpponent(end);
+		err = sendIA(end, sockIA);
+		if (err == -1) {
+			return -1;
+		}
+		err = 0;
 		return end;
 	}
 	end = responseContinuerAJouer(coupResponse.propCoup, gameRequest.nomJoueur);
 	if (end != 0) {
 		scoreOpponent(end);
+		err = sendIA(end, sockIA);
+		if (err == -1) {
+			return -1;
+		}
+		err = 0;
 		return end;
 	}
 	return end;
