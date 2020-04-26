@@ -5,9 +5,11 @@
 #include <time.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 #define SEVERE_COLOR "\x1B[31m"
 #define RESET_COLOR "\x1B[0m"
+
 #define TIME_MAX 5000
 
 /*
@@ -32,6 +34,7 @@ typedef struct PlayerData {
 int valid = 1;
 int timeout = 1;
 int port = -1;
+int showBoard = 0;
 
 
 /*
@@ -136,7 +139,7 @@ void printLog(LogType type) {
 
 
 void printUsage(char* execName) {
-    printf("Usage: %s [--noValid|--noTimeout|--debug] no_port\n", execName);
+    printf("Usage: %s [--noValid|--noTimeout|--debug|--showBoard] no_port\n", execName);
 }
 
 
@@ -155,6 +158,9 @@ int parsingParameters(int argc, char** argv) {
         }
         else if (strcmp(argv[i], "--debug") == 0) {
             debug = 1;
+        }
+        else if (strcmp(argv[i], "--showBoard") == 0) {
+            showBoard = 1;
         }
         else {
             printf("Error: unknown argument '%s'\n", argv[i]);
@@ -207,6 +213,7 @@ int sendGameResponse(PlayerData *player, TCodeRep code) {
 
 
 int sendPlayingResponse(TCodeRep code, TValCoup val, TPropCoup prop) {
+    sprintf(logMessage, "Sending TCoupRep to players (Err: %i, Val: %i, Prop: %i)", code, val, prop); printLog(DEBUG);
     TCoupRep playingResponse;
     playingResponse.err = code;
     playingResponse.validCoup = val;
@@ -214,7 +221,7 @@ int sendPlayingResponse(TCodeRep code, TValCoup val, TPropCoup prop) {
     for (int i = 0; i < 2; i++) {
         int err = send(players[i].socket, &playingResponse, sizeof(TCoupRep), 0);
         if (err <= 0) {
-            // TODO
+            sprintf(logMessage, "Error while sending TCoupRep to player '%s'", players[i].name); printLog(SEVERE);
         }
     }
 }
@@ -232,7 +239,12 @@ void launchRound(int number) {
         }
     }
     else {
-        currentPlayer = currentPlayer->opponent;
+        if (players[0].number == 1) {
+            currentPlayer = &players[1];
+        }
+        else {
+            currentPlayer = &players[0];
+        }
     }
     currentPlayer->number = 1;
     currentPlayer->opponent->number = 2;
@@ -262,27 +274,30 @@ void endGame() {
 
 
 void endRound(PlayerData *winner) {
-    sprintf(logMessage, "End of the round %i", roundNumber); printLog(INFO);
+    sprintf(logMessage, "------------ End of the round %i ------------", roundNumber); printLog(INFO);
     if (winner == NULL) {
         sprintf(logMessage, "Result: draw"); printLog(INFO);
     }
     else {
         sprintf(logMessage, "Result: player '%s' won", winner->name); printLog(INFO);
     }
-     if (roundNumber == 1) {
-         roundNumber = 2;
-         launchRound(2);
-     }
-     else {
-         endGame();
-     }
+    sprintf(logMessage, "--------------------------------------------"); printLog(INFO);
+    if (roundNumber == 1) {
+        roundNumber = 2;
+        launchRound(2);
+    }
+    else {
+        endGame();
+    }
 }
 
 
-void endAction(PlayerData *player, TPropCoup moveProperty, TCoupReq *playingRequest) {
+void endAction(PlayerData *player, TCodeRep code, TValCoup value, TPropCoup moveProperty, TCoupReq *playingRequest) {
     if (timeout) {
         resetClockTimer();
     }
+
+    sendPlayingResponse(code, value, moveProperty);
 
     int err;
     PlayerData *winner;
@@ -291,7 +306,7 @@ void endAction(PlayerData *player, TPropCoup moveProperty, TCoupReq *playingRequ
         case CONT:
             err = send(player->opponent->socket, playingRequest, sizeof(TCoupReq), 0);
             if (err <= 0) {
-                // TODO
+                sprintf(logMessage, "Error while sending 'TCoupReq' request to player '%s'", player->opponent->name); printLog(SEVERE);
             }
             currentPlayer = currentPlayer->opponent;
             return;
@@ -396,6 +411,11 @@ int handleGameRequest(PlayerData *player) {
     2 -> invalid move
 */
 int handlePlayingRequest(PlayerData *player) {
+    if (player != currentPlayer) { // Not this player turn to play TODO: might loop a lot!
+        //sprintf(logMessage, "Player '%s' attempted to play out of his turn", player->name); printLog(DEBUG);
+        return 0;
+    }
+
     TCoupReq playingRequest;
 
     int err = recv(player->socket, &playingRequest, sizeof(TCoupReq), 0);
@@ -404,14 +424,8 @@ int handlePlayingRequest(PlayerData *player) {
         return 1;
     }
 
-    if (player != currentPlayer) { // Not this player turn to play
-        sprintf(logMessage, "Player '%s' attempted to play out of his turn", player->name); printLog(DEBUG);
-        return 1;
-    }
-
     if (timeout && playerTimedOut) {
-        sendPlayingResponse(ERR_COUP, TIMEOUT, PERDU);
-        endAction(player, PERDU, &playingRequest);
+        endAction(player, ERR_COUP, TIMEOUT, PERDU, NULL);
         return 0;
     }
 
@@ -419,17 +433,32 @@ int handlePlayingRequest(PlayerData *player) {
     bool isValidMove;
 
     if (valid) { // If validation is turned on
-        isValidMove = validationCoup(player->number, playingRequest, &moveProperty);
+        sprintf(logMessage, "Validating..."); printLog(DEBUG);
+        if (showBoard) {
+            printf("\n------------------------------ [ Game State ] ------------------------------\n\n");
+            isValidMove = validationCoup(player->number, playingRequest, &moveProperty);
+            printf("\n----------------------------------------------------------------------------\n\n");
+        }
+        else {
+            int stdout = dup(STDOUT_FILENO);
+            int tmp = open("/dev/null", O_WRONLY, 0600);
+            dup2(tmp, STDOUT_FILENO);
+
+            isValidMove = validationCoup(player->number, playingRequest, &moveProperty);
+
+            dup2(stdout, STDOUT_FILENO);
+            close(tmp);
+        }
     }
     else {
+        sprintf(logMessage, "Skipping validation"); printLog(DEBUG);
         isValidMove = true;
         moveProperty = playingRequest.propCoup;
     }
 
     if (isValidMove) {
         sprintf(logMessage, "Player '%s' move was accepted", player->name); printLog(INFO);
-        sendPlayingResponse(ERR_OK, VALID, moveProperty);
-        endAction(player, moveProperty, &playingRequest);
+        endAction(player, ERR_OK, VALID, moveProperty, &playingRequest);
         return 0;
     }
 
@@ -477,7 +506,7 @@ int handlePlayerAction(PlayerData *player) {
             }
             else {
                 err = handlePlayingRequest(player);
-                if (err = 0) {
+                if (err == 0) {
                     return 0;
                 }
                 else if (err == 1) {
@@ -494,7 +523,7 @@ int handlePlayerAction(PlayerData *player) {
     }
 
     if (gameStarted) {
-        sendPlayingResponse(errorCode, TRICHE, PERDU);
+        endAction(player, errorCode, TRICHE, PERDU, NULL);
     }
     else {
         sendGameResponse(player, errorCode);
@@ -510,8 +539,7 @@ int handlePlayerAction(PlayerData *player) {
 */
 void timerOutSignalHandler() {
     sprintf(logMessage, "Player '%s' timed out", currentPlayer->name); printLog(INFO);
-    sendPlayingResponse(ERR_COUP, TIMEOUT, PERDU);
-    endRound(currentPlayer->opponent);
+    endAction(currentPlayer, ERR_COUP, TIMEOUT, PERDU, NULL);
 }
 
 
