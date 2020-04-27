@@ -40,9 +40,11 @@ int showBoard = 0;
 /*
     Game datas
 */
+int socketServer;
 PlayerData players[2];
 PlayerData *currentPlayer; //player currently playing
 int gameStarted = 0;
+int gameContinue = 1;
 int roundNumber = 1; // 1 for the first round, 2 for the second
 int playerTimedOut = 0;
 
@@ -183,12 +185,13 @@ void initPlayers() {
 }
 
 
-void disconnectPlayer(PlayerData *player) {
-    sprintf(logMessage, "Player %i disconnected", player->id); printLog(INFO);
+void closeConnection(PlayerData *player) {
+    if (player->socket == -1) {
+        return;
+    }
     shutdown(player->socket, SHUT_RDWR);
     close(player->socket);
     player->socket = -1;
-    // TODO give victory to opponent ...
 }
 
 
@@ -209,10 +212,11 @@ int sendGameResponse(PlayerData *player, TCodeRep code) {
         return 1;
         // TODO
     }
+    return 0;
 }
 
 
-int sendPlayingResponse(TCodeRep code, TValCoup val, TPropCoup prop) {
+void sendPlayingResponse(TCodeRep code, TValCoup val, TPropCoup prop) {
     sprintf(logMessage, "Sending TCoupRep to players (Err: %i, Val: %i, Prop: %i)", code, val, prop); printLog(DEBUG);
     TCoupRep playingResponse;
     playingResponse.err = code;
@@ -269,7 +273,16 @@ void endGame() {
     if (timeout) {
         stopClockTimer();
     }
-    // TODO closes ...
+    gameContinue = 0;
+    close(socketServer);
+    closeConnection(&players[0]);
+    closeConnection(&players[1]);
+}
+
+
+void intHandler() {
+    sprintf(logMessage, "Server was force stopped, shutting down the connections..."); printLog(INFO);
+    endGame();
 }
 
 
@@ -282,7 +295,7 @@ void endRound(PlayerData *winner) {
         sprintf(logMessage, "Result: player '%s' won", winner->name); printLog(INFO);
     }
     sprintf(logMessage, "--------------------------------------------"); printLog(INFO);
-    if (roundNumber == 1) {
+    if (roundNumber == 1 && gameContinue) {
         roundNumber = 2;
         launchRound(2);
     }
@@ -324,6 +337,19 @@ void endAction(PlayerData *player, TCodeRep code, TValCoup value, TPropCoup move
 }
 
 
+void playerDisconnected(PlayerData *player) {
+    if (gameStarted) {
+        sprintf(logMessage, "Player '%s' disconnected", player->name); printLog(INFO);
+        gameContinue = 0;
+        endRound(player->opponent);
+    }
+    else {
+        sprintf(logMessage, "Player %i disconnected", player->id); printLog(INFO);
+    }
+    closeConnection(player);
+}
+
+
 int handlePlayerConnection(int socketServer, PlayerData players[]) {
     int newPlayer;
     if (players[0].socket == -1) {
@@ -343,7 +369,9 @@ int handlePlayerConnection(int socketServer, PlayerData players[]) {
                     (struct sockaddr *)&addClient,
                     (socklen_t *)&sizeAddr);
     if (playerSock < 0) {
-        sprintf(logMessage, "Error occured while accepting a player connection"); printLog(SEVERE);
+        if (gameContinue) {
+            sprintf(logMessage, "Error occured while accepting a player connection"); printLog(SEVERE);
+        }
         return -2;
     }
 
@@ -401,6 +429,8 @@ int handleGameRequest(PlayerData *player) {
     if (player->opponent->ready) {
         launchGame();
     }
+
+    return 0;
 }
 
 
@@ -479,7 +509,7 @@ int handlePlayerAction(PlayerData *player) {
 
     int err = recv(player->socket, &idRequest, sizeof(TIdReq), MSG_PEEK);
     if (err <= 0) {
-        disconnectPlayer(player);
+        playerDisconnected(player);
         return 0;
     }
     else {
@@ -549,11 +579,11 @@ int main(int argc, char** argv) {
     */
 
     int err,
-        socketServer,
         maxSock;
 
     signal(SIGUSR1, timerOutSignalHandler);
     signal(SIGUSR2, timerInterruptSignalHandler);
+    signal(SIGINT, intHandler);
 
     initPlayers();
 
@@ -590,7 +620,7 @@ int main(int argc, char** argv) {
 
     maxSock = socketServer;
 
-    for (;;) {
+    while (gameContinue) {
         FD_ZERO(&readfs);
         FD_SET(socketServer, &readfs);
 
@@ -622,5 +652,4 @@ int main(int argc, char** argv) {
         }
     }
 
-    endGame();
 }
