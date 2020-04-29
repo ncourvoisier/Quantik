@@ -122,98 +122,57 @@ verifColonne([Ligne|Grid], Colonne, Pion) :-
     nth0(Colonne,Ligne, Pion),!;
     verifColonne(Grid, Colonne, Pion).
 
-
-% This function check if the square 1 contain a pawn
+% This fonction returns the greatest multiplicator of 2 that is inferior or equal to Val
 %
-% Grid : the grid of Quantik game with the preceding move of player
-% Pion : the pawn to check if is in the square
-verifCarre1(Grid, Pion) :-
-    retournePionDansCase(Grid,0,0,Val),
+% Val : the input value
+% Inf : the multiplicator of 2 that was found
+mod2Inf(Val, Inf):-
+    Int is Val // 2,
+    Inf is Int * 2.
+
+% This fonction checks if a pawn of the same type was already placed in this square
+%
+% Grid : the Quantik game grid
+% Pion : the pawn we want to place
+% Px : the x coordinate we want to place the pawn at
+% Py : the y coordinate we want to place the pawn at
+verifCarre(Grid, Pion, Px, Py):-
+    mod2Inf(Px, CarX),
+    mod2Inf(Py, CarY),
+    verifCarreN(Grid, Pion, CarX, CarY).
+
+
+% This fonction checks the existence of a given pawn type
+% in the square located at the X,Y coordinates
+%
+% Grid : the Quantik game grid
+% Pion : the pawn type we are seeking for
+% X : the x coordinate of the square to search in
+% Y : the y coordinate of the square to search in
+verifCarreN(Grid, Pion, X, Y):-
+    retournePionDansCase(Grid,X,Y,Val),
     Val == Pion,!;
-    retournePionDansCase(Grid,0,1,Val),
+    retournePionDansCase(Grid,X1,Y,Val),
+    X1 is X + 1,
     Val == Pion,!;
-    retournePionDansCase(Grid,1,0,Val),
+    retournePionDansCase(Grid,X,Y1,Val),
+    Y1 is Y + 1,
     Val == Pion,!;
-    retournePionDansCase(Grid,1,1,Val),
+    retournePionDansCase(Grid,X1,Y1,Val),
+    X1 is X + 1,
+    Y1 is Y + 1,
     Val == Pion,!;
     false.
 
-% This function check if the square 2 contain a pawn
+% This fonctions checks the existence of a given pawn type in the 4 squares
 %
-% Grid : the grid of Quantik game with the preceding move of player
-% Pion : the pawn to check if is in the square
-verifCarre2(Grid, Pion) :-
-    retournePionDansCase(Grid,0,2,Val),
-    Val == Pion,!;
-    retournePionDansCase(Grid,0,3,Val),
-    Val == Pion,!;
-    retournePionDansCase(Grid,1,2,Val),
-    Val == Pion,!;
-    retournePionDansCase(Grid,1,3,Val),
-    Val == Pion,!;
-    false.
-
-% This function check if the square 3 contain a pawn
-%
-% Grid : the grid of Quantik game with the preceding move of player
-% Pion : the pawn to check if is in the square
-verifCarre3(Grid, Pion) :-
-    retournePionDansCase(Grid,2,0,Val),
-    Val == Pion,!;
-    retournePionDansCase(Grid,2,1,Val),
-    Val == Pion,!;
-    retournePionDansCase(Grid,3,0,Val),
-    Val == Pion,!;
-    retournePionDansCase(Grid,3,1,Val),
-    Val == Pion,!;
-    false.
-
-% This function check if the square 4 contain a pawn
-%
-% Grid : the grid of Quantik game with the preceding move of player
-% Pion : the pawn to check if is in the square
-verifCarre4(Grid, Pion) :-
-    retournePionDansCase(Grid,2,2,Val),
-    Val == Pion,!;
-    retournePionDansCase(Grid,2,3,Val),
-    Val == Pion,!;
-    retournePionDansCase(Grid,3,2,Val),
-    Val == Pion,!;
-    retournePionDansCase(Grid,3,3,Val),
-    Val == Pion,!;
-    false.
-
-% This function check if the superior rectangle contain a pawn
-%
-% Grid : the grid of Quantik game with the preceding move of player
-% Colonne : the column to check
-% Pion : the pawn to check if is in the square with the coordinate line and column
-verifRectangleSup(Grid, Colonne, Pion) :-
-    Colonne < 2,
-        verifCarre1(Grid,Pion),!;
-        verifCarre2(Grid,Pion),!.
-
-% This function check if the inferior rectangle contain a pawn
-%
-% Grid : the grid of Quantik game with the preceding move of player
-% Colonne : the column to check
-% Pion : the pawn to check if is in the square with the coordinate line and column
-verifRectangleInf(Grid, Colonne, Pion) :-
-    Colonne < 2,
-        verifCarre3(Grid,Pion),!;
-        verifCarre4(Grid,Pion),!.
-
-% This function check if the square determinate with line and column contain a pawn
-%
-% Grid : the grid of Quantik game with the preceding move of player
-% Ligne : the line position of the new move
-% Colonne : the column position of the new move
-% Pion : the pawn to check if is in the square with the coordinate line and column
-verifCarre(Grid, Ligne, Colonne, Pion) :-
-    Ligne < 2,
-    verifRectangleSup(Grid,Colonne,Pion),!;
-    verifRectangleInf(Grid,Colonne,Pion),!.
-
+% Grid : the Quantik game grid
+% Pion : the pawn type we are seeking for
+verifCarreAll(Grid, Pion):-
+    verifCarreN(Grid, Pion, 0, 0),!;
+    verifCarreN(Grid, Pion, 2, 0),!;
+    verifCarreN(Grid, Pion, 0, 2),!;
+    verifCarreN(Grid, Pion, 2, 2),!.
 
 
 % Les tests unitaires :
@@ -241,52 +200,49 @@ verifCarre(Grid, Ligne, Colonne, Pion) :-
     test('verifColonne5', [fail]) :-
         verifColonne([[cb,0,0,0],[0,cn,0,0],[0,cb,0,0],[0,0,0,cb]],0,cn).
 
-    test('verifCarre11', [true]) :-
-        verifCarre1([[a,b,0,0],[c,d,0,0],[0,0,0,0],[0,0,0,0]],a).
-    test('verifCarre12', [true]) :-
-        verifCarre1([[a,b,0,0],[c,d,0,0],[0,0,0,0],[0,0,0,0]],b).
-    test('verifCarre13', [true]) :-
-        verifCarre1([[a,b,0,0],[c,d,0,0],[0,0,0,0],[0,0,0,0]],c).
-    test('verifCarre14', [true]) :-
-        verifCarre1([[a,b,0,0],[c,d,0,0],[0,0,0,0],[0,0,0,0]],d).
-    test('verifCarre15', [fail]) :-
-        verifCarre1([[a,b,0,0],[c,d,0,0],[0,0,0,0],[0,0,0,0]],0).
+    test('verifCarre1-1', [true]) :-
+        verifCarre([[0,0,0,0],[0,a,0,0],[0,0,0,0],[0,0,0,0]], a, 0, 0).
+    test('verifCarre1-2', [true]) :-
+        verifCarre([[0,0,0,0],[0,a,0,0],[0,0,0,0],[0,0,0,0]], a, 1, 0).
+    test('verifCarre1-3', [true]) :-
+        verifCarre([[0,0,0,0],[0,a,0,0],[0,0,0,0],[0,0,0,0]], a, 0, 1).
+    test('verifCarre1-4', [true]) :-
+        verifCarre([[0,0,0,0],[0,a,0,0],[0,0,0,0],[0,0,0,0]], a, 1, 1).
+    test('verifCarre1-f', [fail]) :-
+        verifCarre([[0,0,0,0],[0,0,0,0],[a,0,0,0],[0,0,0,0]], a, 1, 1).
 
-    test('verifCarre21', [true]) :-
-        verifCarre2([[0,0,a,b],[0,0,c,d],[0,0,0,0],[0,0,0,0]],a).
-    test('verifCarre22', [true]) :-
-        verifCarre2([[0,0,a,b],[0,0,c,d],[0,0,0,0],[0,0,0,0]],b).
-    test('verifCarre23', [true]) :-
-        verifCarre2([[0,0,a,b],[0,0,c,d],[0,0,0,0],[0,0,0,0]],c).
-    test('verifCarre24', [true]) :-
-        verifCarre2([[0,0,a,b],[0,0,c,d],[0,0,0,0],[0,0,0,0]],d).
-    test('verifCarre25', [fail]) :-
-        verifCarre2([[0,0,a,b],[0,0,c,d],[0,0,0,0],[0,0,0,0]],0).
+    test('verifCarre2-1', [true]) :-
+        verifCarre([[0,0,0,0],[0,0,0,a],[0,0,0,0],[0,0,0,0]], a, 0, 2).
+    test('verifCarre2-2', [true]) :-
+        verifCarre([[0,0,0,0],[0,0,0,a],[0,0,0,0],[0,0,0,0]], a, 1, 2).
+    test('verifCarre2-3', [true]) :-
+        verifCarre([[0,0,0,0],[0,0,0,a],[0,0,0,0],[0,0,0,0]], a, 0, 3).
+    test('verifCarre2-4', [true]) :-
+        verifCarre([[0,0,0,0],[0,0,0,a],[0,0,0,0],[0,0,0,0]], a, 1, 3).
+    test('verifCarre2-f', [fail]) :-
+        verifCarre([[0,0,0,0],[0,0,0,0],[a,0,0,0],[0,0,0,0]], a, 1, 3).
 
-    test('verifCarre31', [true]) :-
-        verifCarre3([[0,0,0,0],[0,0,0,0],[a,b,0,0],[c,d,0,0]],a).
-    test('verifCarre32', [true]) :-
-        verifCarre3([[0,0,0,0],[0,0,0,0],[a,b,0,0],[c,d,0,0]],b).
-    test('verifCarre33', [true]) :-
-        verifCarre3([[0,0,0,0],[0,0,0,0],[a,b,0,0],[c,d,0,0]],c).
-    test('verifCarre34', [true]) :-
-        verifCarre3([[0,0,0,0],[0,0,0,0],[a,b,0,0],[c,d,0,0]],d).
-    test('verifCarre35', [fail]) :-
-        verifCarre3([[0,0,0,0],[0,0,0,0],[a,b,0,0],[c,d,0,0]],0).
+    test('verifCarre3-1', [true]) :-
+        verifCarre([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,a,0,0]], a, 2, 0).
+    test('verifCarre3-2', [true]) :-
+        verifCarre([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,a,0,0]], a, 3, 0).
+    test('verifCarre3-3', [true]) :-
+        verifCarre([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,a,0,0]], a, 2, 1).
+    test('verifCarre3-4', [true]) :-
+        verifCarre([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,a,0,0]], a, 3, 1).
+    test('verifCarre3-f', [fail]) :-
+        verifCarre([[0,0,0,0],[0,0,0,a],[0,0,0,0],[0,0,0,0]], a, 3, 1).
 
-    test('verifCarre41', [true]) :-
-        verifCarre4([[0,0,0,0],[0,0,0,0],[0,0,a,b],[0,0,c,d]],a).
-    test('verifCarre42', [true]) :-
-        verifCarre4([[0,0,0,0],[0,0,0,0],[0,0,a,b],[0,0,c,d]],b).
-    test('verifCarre43', [true]) :-
-        verifCarre4([[0,0,0,0],[0,0,0,0],[0,0,a,b],[0,0,c,d]],c).
-    test('verifCarre44', [true]) :-
-        verifCarre4([[0,0,0,0],[0,0,0,0],[0,0,a,b],[0,0,c,d]],d).
-    test('verifCarre45', [fail]) :-
-        verifCarre4([[0,0,0,0],[0,0,0,0],[0,0,a,b],[0,0,c,d]],0).
+    test('verifCarre4-1', [true]) :-
+        verifCarre([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,a]], a, 2, 2).
+    test('verifCarre4-2', [true]) :-
+        verifCarre([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,a]], a, 3, 2).
+    test('verifCarre4-3', [true]) :-
+        verifCarre([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,a]], a, 2, 3).
+    test('verifCarre4-4', [true]) :-
+        verifCarre([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,a]], a, 3, 3).
+    test('verifCarre4-f', [fail]) :-
+        verifCarre([[0,0,0,0],[0,0,0,a],[0,0,0,0],[0,0,0,0]], a, 3, 3).
+
 
 :-end_tests(chp0).
-
-
-
-
