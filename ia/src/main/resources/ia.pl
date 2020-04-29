@@ -47,8 +47,7 @@ jouerCoupRandom(Ligne, Colonne, Pion) :-
 % Ligne : return the number of the line played
 % Colonne : return the number of the column played
 % Pion : return the pawn played
-% PionRestant : The pawns aviable to play
-jouerCoupRandomSurCaseVide(Grid,Ligne,Colonne,Pion,PionRestant) :-
+jouerCoupRandomSurCaseVide(Grid,Ligne,Colonne,Pion) :-
     random(0,4,L),
     random(0,4,C),
     random(0,4,P),
@@ -57,40 +56,41 @@ jouerCoupRandomSurCaseVide(Grid,Ligne,Colonne,Pion,PionRestant) :-
         Ligne = L,
         Colonne = C,
         Pion = P,!;
-        jouerCoupRandomSurCaseVide(Grid,Ligne,Colonne,Pion,PionRestant).
+        jouerCoupRandomSurCaseVide(Grid,Ligne,Colonne,Pion).
 
 
-
-jouerCoupRandomSurCaseVideT(Grid,Ligne,Colonne,Pion,PionRestant) :-
+% This function play a random move in the grid with the aviable pawn
+%
+% Grid : the grid of Quantik game with preceding move of player
+% Ligne : return the number of the line played
+% Colonne : return the number of the column played
+% Pion : return the pawn played
+% PionRestant : The pawns aviable to play
+jouerCoupRandomSurCaseVideAvecPionRestant(Grid,Ligne,Colonne,Pion,PionRestant) :-
     random(0,4,L),
     random(0,4,C),
     length(PionRestant,S),
-    S1 is S - 1,
-    random(0,S1,P1),
-    write(P1),
-    nth0(P1,PionRestant,Pion),
-    write(" Pion = "),write(Pion),write("\n"),
+    random(0,S,P1),
+    nth0(P1,PionRestant,P),
     retournePionDansCase(Grid,L,C,Val),
-    writeln(Val),
-    writeln(L),
-    writeln(C),
     Val == 0,
         Ligne = L,
         Colonne = C,
-        write(Pion),!;
-        write("ici"),
-        jouerCoupRandomSurCaseVide(Grid,Ligne,Colonne,Pion,PionRestant).
+        Pion = P,
+        !;
+        jouerCoupRandomSurCaseVideAvecPionRestant(Grid,Ligne,Colonne,Pion,PionRestant).
 
-
-
-
-
-
-
-
-
-
-
+% This function play a random move in the grid with the aviable pawn and return the new list of aviable pawn
+%
+% Grid : the grid of Quantik game with preceding move of player
+% Ligne : return the number of the line played
+% Colonne : return the number of the column played
+% Pion : return the pawn played
+% PionRestant : The pawns aviable to play
+% NvPionRestant : The new list of aviable pawn
+jouerCoupRandomAvecPionDisponible(Grid,Ligne,Colonne,Pion,PionRestant, NvPionRestant) :-
+    jouerCoupRandomSurCaseVideAvecPionRestant(Grid,Ligne,Colonne,Pion,PionRestant),
+    select(Pion,PionRestant,NvPionRestant),!.
 
 % This function check the value of the case
 %
@@ -243,6 +243,21 @@ verifCarreAll(Grid, Pion):-
         verifCarre([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,a]], a, 3, 3).
     test('verifCarre4-f', [fail]) :-
         verifCarre([[0,0,0,0],[0,0,0,a],[0,0,0,0],[0,0,0,0]], a, 3, 3).
+        
+    test('jouerCoupRandomAvecPionDisponible11', [true(length(NvPion,1))]) :-
+        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0],[cn,cn,cn,cn]], L, C, P, [cn,pn],NvPion).
+    test('jouerCoupRandomAvecPionDisponible21', [L==2]) :-
+        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0],[cn,cn,cn,cn]], L, C, P, [cn,pn],NvPion).
+    test('jouerCoupRandomAvecPionDisponible31', [C==3]) :-
+        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0],[cn,cn,cn,cn]], L, C, P, [cn,pn],NvPion).
 
+    test('jouerCoupRandomAvecPionDisponible12', [true(length(NvPion,0))]) :-
+        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], L, C, P, [pn],NvPion).
+    test('jouerCoupRandomAvecPionDisponible22', [L==3]) :-
+        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], L, C, P, [pn],NvPion).
+    test('jouerCoupRandomAvecPionDisponible32', [C==3]) :-
+        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], L, C, P, [pn],NvPion).
+    test('jouerCoupRandomAvecPionDisponible42', [P==pn]) :-
+        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], L, C, P, [pn],NvPion).
 
 :-end_tests(chp0).
