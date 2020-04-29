@@ -216,6 +216,44 @@ verifCarre(Grid, Ligne, Colonne, Pion) :-
 
 
 
+jouerCoup(Grid,Ligne,Colonne,Pion,ListePion,NvListePion) :-
+    jouerCoupRandomAvecPionDisponible(Grid,L,C,P,ListePion,NvListePion),
+
+    writeln(L),
+    writeln(C),
+    writeln(P),
+
+    (verifColonne(Grid,L,P) ->
+        write("P EST DANS LA LIGNE"),false
+    ;
+        write("C'EST OK1")
+    ),
+
+    (verifColonne(Grid,C,P) ->
+        write("P EST DANS LA Colonne"),false
+    ;
+        write("C'EST OK2")
+    ),
+
+    (verifCarre(Grid,L,C,P) ->
+        write("P EST DANS LE CARRE"),false
+    ;
+        write("C'EST OK3")
+    ),
+
+    !.
+
+    %verifColonne([Ligne|Grid], Colonne, Pion) :-
+
+    %verifLigne(Grid, Ligne, Colonne, Pion),
+    %verifColonne(Grid, Ligne, Colonne, Pion),
+    %jouerCoup(Grid,Ligne,Colonne,Pion,ListePion,NvListePion),!.
+
+
+
+
+
+
 % Les tests unitaires :
 :-begin_tests(chp0).
 
@@ -285,23 +323,15 @@ verifCarre(Grid, Ligne, Colonne, Pion) :-
     test('verifCarre45', [fail]) :-
         verifCarre4([[0,0,0,0],[0,0,0,0],[0,0,a,b],[0,0,c,d]],0).
 
-    test('jouerCoupRandomAvecPionDisponible11', [true(length(NvPion,1))]) :-
-        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0],[cn,cn,cn,cn]], L, C, P, [cn,pn],NvPion).
-    test('jouerCoupRandomAvecPionDisponible21', [L==2]) :-
-        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0],[cn,cn,cn,cn]], L, C, P, [cn,pn],NvPion).
-    test('jouerCoupRandomAvecPionDisponible31', [C==3]) :-
-        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0],[cn,cn,cn,cn]], L, C, P, [cn,pn],NvPion).
+    test('jouerCoupRandomAvecPionDisponible11', [all([L,C] == [[2,3]])]) :-
+        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0],[cn,cn,cn,cn]], L, C, _, [cn,pn],_).
+    test('jouerCoupRandomAvecPionDisponible12', [true(length(NvPion,1))]) :-
+        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0],[cn,cn,cn,cn]], _, _, _, [cn,pn],NvPion).
 
     test('jouerCoupRandomAvecPionDisponible12', [true(length(NvPion,0))]) :-
-        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], L, C, P, [pn],NvPion).
-    test('jouerCoupRandomAvecPionDisponible22', [L==3]) :-
-        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], L, C, P, [pn],NvPion).
-    test('jouerCoupRandomAvecPionDisponible32', [C==3]) :-
-        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], L, C, P, [pn],NvPion).
-    test('jouerCoupRandomAvecPionDisponible42', [P==pn]) :-
-        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], L, C, P, [pn],NvPion).
-
-
+        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], _, _, _, [pn],NvPion).
+    test('jouerCoupRandomAvecPionDisponible22', [all([L,C,P] == [[3,3,pn]])]) :-
+        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], L, C, P, [pn],_).
 
 :-end_tests(chp0).
 
