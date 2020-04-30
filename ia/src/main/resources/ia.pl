@@ -59,7 +59,7 @@ jouerCoupRandomSurCaseVide(Grid,Ligne,Colonne,Pion) :-
         jouerCoupRandomSurCaseVide(Grid,Ligne,Colonne,Pion).
 
 
-% This function play a random move in the grid with the aviable pawn
+% This function play a random move in the grid with the available pawn
 %
 % Grid : the grid of Quantik game with preceding move of player
 % Ligne : return the number of the line played
@@ -74,13 +74,13 @@ jouerCoupRandomSurCaseVideAvecPionRestant(Grid,Ligne,Colonne,Pion,PionRestant) :
     nth0(P1,PionRestant,P),
     retournePionDansCase(Grid,L,C,Val),
     Val == 0,
-        Ligne = L,
-        Colonne = C,
-        Pion = P,
-        !;
-        jouerCoupRandomSurCaseVideAvecPionRestant(Grid,Ligne,Colonne,Pion,PionRestant).
+    Ligne = L,
+    Colonne = C,
+    Pion = P,
+    !;
+    jouerCoupRandomSurCaseVideAvecPionRestant(Grid,Ligne,Colonne,Pion,PionRestant).
 
-% This function play a random move in the grid with the aviable pawn and return the new list of aviable pawn
+% This function play a random move in the grid with the available pawn and return the new list of available pawn
 %
 % Grid : the grid of Quantik game with preceding move of player
 % Ligne : return the number of the line played
@@ -243,7 +243,7 @@ verifCarreAll(Grid, Pion):-
         verifCarre([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,a]], a, 3, 3).
     test('verifCarre4-f', [fail]) :-
         verifCarre([[0,0,0,0],[0,0,0,a],[0,0,0,0],[0,0,0,0]], a, 3, 3).
-        
+
     test('jouerCoupRandomAvecPionDisponible11', [true(length(NvPion,1))]) :-
         jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0],[cn,cn,cn,cn]], L, C, P, [cn,pn],NvPion).
     test('jouerCoupRandomAvecPionDisponible21', [L==2]) :-
