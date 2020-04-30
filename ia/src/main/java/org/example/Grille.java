@@ -13,11 +13,34 @@ public class Grille {
     private int grille[][];
 
     /**
+     * The aviable pawn of the Quantik game
+     */
+    private String pionRestant[];
+
+    /**
      * The constructor of the class
      */
     Grille () {
         this.grille = new int[4][4];
         intitalizeGrille(this.grille);
+        this.pionRestant = new String[8];
+        initializePionRestant(this.pionRestant);
+    }
+
+    /**
+     * This function initialize the aviable pawn for the Quantik game
+     *
+     * @param p the array to initialize
+     */
+    private void initializePionRestant(String[] p) {
+        p[0] = "c";
+        p[1] = "c";
+        p[2] = "p";
+        p[3] = "p";
+        p[4] = "s";
+        p[5] = "s";
+        p[6] = "t";
+        p[7] = "t";
     }
 
     /**
@@ -25,7 +48,7 @@ public class Grille {
      *
      * @param grille the grid to initialize
      */
-    private void intitalizeGrille(int grille [][]) {
+    private void intitalizeGrille(int[][] grille) {
         int nbColonne = grille.length;
         int nbLigne = grille[0].length;
         for (int i = 0; i < nbLigne; i++) {
@@ -99,6 +122,32 @@ public class Grille {
      */
     public void addPawnInGrille(int x, int y, int p) {
         grille[x][y] = p;
+    }
+
+    /**
+     * This function transform the grid in list of list String for the prolog file
+     *
+     * @return the String of list of list of the Quantik grid
+     */
+    public String toString() {
+        int nbColonne = grille.length;
+        int nbLigne = grille[0].length;
+        String str = "[";
+        for (int i = 0; i < nbLigne; i++) {
+            str += "[";
+            for (int j = 0; j < nbColonne; j++) {
+                str += grille[i][j];
+                if  (j != 3) {
+                    str += ",";
+                }
+            }
+            str += "]";
+            if (i != 3) {
+                str += ",";
+            }
+        }
+        str += "]";
+        return str;
     }
 
     /**

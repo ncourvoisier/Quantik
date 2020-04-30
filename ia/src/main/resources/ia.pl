@@ -65,7 +65,7 @@ jouerCoupRandomSurCaseVide(Grid,Ligne,Colonne,Pion) :-
 % Ligne : return the number of the line played
 % Colonne : return the number of the column played
 % Pion : return the pawn played
-% PionRestant : The pawns aviable to play
+% PionRestant : The pawns available to play
 jouerCoupRandomSurCaseVideAvecPionRestant(Grid,Ligne,Colonne,Pion,PionRestant) :-
     random(0,4,L),
     random(0,4,C),
@@ -86,8 +86,8 @@ jouerCoupRandomSurCaseVideAvecPionRestant(Grid,Ligne,Colonne,Pion,PionRestant) :
 % Ligne : return the number of the line played
 % Colonne : return the number of the column played
 % Pion : return the pawn played
-% PionRestant : The pawns aviable to play
-% NvPionRestant : The new list of aviable pawn
+% PionRestant : The pawns available to play
+% NvPionRestant : The new list of available pawn
 jouerCoupRandomAvecPionDisponible(Grid,Ligne,Colonne,Pion,PionRestant, NvPionRestant) :-
     jouerCoupRandomSurCaseVideAvecPionRestant(Grid,Ligne,Colonne,Pion,PionRestant),
     select(Pion,PionRestant,NvPionRestant),!.
@@ -175,6 +175,45 @@ verifCarreAll(Grid, Pion):-
     verifCarreN(Grid, Pion, 2, 2),!.
 
 
+% This function play a random move in the grid with the available pawn and return the new list of available pawn
+%
+% Grid : the grid of Quantik game with preceding move of player
+% Ligne : return the number of the line played
+% Colonne : return the number of the column played
+% Pion : return the pawn played
+% PionRestant : The pawns available to play
+% NvPionRestant : The new list of available pawn
+jouerCoup(Grid,Ligne,Colonne,Pion,ListePion,NvListePion) :-
+    jouerCoupRandomAvecPionDisponible(Grid,L,C,P,ListePion,NvListePion),
+    Stop = 0,
+
+    (verifColonne(Grid,L,P) ->
+        Stop = 1
+    ;
+        write("")
+    ),
+    (verifColonne(Grid,C,P) ->
+        Stop = 1
+    ;
+        write("")
+    ),
+    (verifCarre(Grid,P,L,C) ->
+        Stop = 1
+    ;
+        write("")
+    ),
+    (Stop == 1 ->
+        jouerCoup(Grid,Ligne,Colonne,Pion,ListePion,NvListePion)
+    ;
+        Ligne = L,
+        Colonne = C,
+        Pion = P
+    ),
+    !.
+
+
+
+
 % Les tests unitaires :
 :-begin_tests(chp0).
 
@@ -200,7 +239,7 @@ verifCarreAll(Grid, Pion):-
     test('verifColonne5', [fail]) :-
         verifColonne([[cb,0,0,0],[0,cn,0,0],[0,cb,0,0],[0,0,0,cb]],0,cn).
 
-    test('verifCarre1-1', [true]) :-
+test('verifCarre1-1', [true]) :-
         verifCarre([[0,0,0,0],[0,a,0,0],[0,0,0,0],[0,0,0,0]], a, 0, 0).
     test('verifCarre1-2', [true]) :-
         verifCarre([[0,0,0,0],[0,a,0,0],[0,0,0,0],[0,0,0,0]], a, 1, 0).
@@ -244,20 +283,20 @@ verifCarreAll(Grid, Pion):-
     test('verifCarre4-f', [fail]) :-
         verifCarre([[0,0,0,0],[0,0,0,a],[0,0,0,0],[0,0,0,0]], a, 3, 3).
 
-    test('jouerCoupRandomAvecPionDisponible11', [true(length(NvPion,1))]) :-
-        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0],[cn,cn,cn,cn]], L, C, P, [cn,pn],NvPion).
-    test('jouerCoupRandomAvecPionDisponible21', [L==2]) :-
-        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0],[cn,cn,cn,cn]], L, C, P, [cn,pn],NvPion).
-    test('jouerCoupRandomAvecPionDisponible31', [C==3]) :-
-        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0],[cn,cn,cn,cn]], L, C, P, [cn,pn],NvPion).
+    test('jouerCoupRandomAvecPionDisponible11', [all([L,C] == [[2,3]])]) :-
+        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0],[cn,cn,cn,cn]], L, C, _, [cn,pn],_).
+    test('jouerCoupRandomAvecPionDisponible12', [true(length(NvPion,1))]) :-
+        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0],[cn,cn,cn,cn]], _, _, _, [cn,pn],NvPion).
 
     test('jouerCoupRandomAvecPionDisponible12', [true(length(NvPion,0))]) :-
-        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], L, C, P, [pn],NvPion).
-    test('jouerCoupRandomAvecPionDisponible22', [L==3]) :-
-        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], L, C, P, [pn],NvPion).
-    test('jouerCoupRandomAvecPionDisponible32', [C==3]) :-
-        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], L, C, P, [pn],NvPion).
-    test('jouerCoupRandomAvecPionDisponible42', [P==pn]) :-
-        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], L, C, P, [pn],NvPion).
+        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], _, _, _, [pn],NvPion).
+    test('jouerCoupRandomAvecPionDisponible22', [all([L,C,P] == [[3,3,pn]])]) :-
+        jouerCoupRandomAvecPionDisponible([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], L, C, P, [pn],_).
+
+    test('jouerCoup12', [all([L,C,P] == [[3,3,pn]])]) :-
+        jouerCoup([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], L, C, P, [pn],_).
+    test('jouerCoup12', [true(length(NvPion,0))]) :-
+        jouerCoup([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], _, _, _, [pn],NvPion).
+
 
 :-end_tests(chp0).

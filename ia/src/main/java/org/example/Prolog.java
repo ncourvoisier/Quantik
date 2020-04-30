@@ -3,6 +3,7 @@ package org.example;
 import org.jpl7.Atom;
 import org.jpl7.Query;
 import org.jpl7.Term;
+import org.jpl7.Util;
 import org.jpl7.Variable;
 
 /**
@@ -52,7 +53,7 @@ public class Prolog {
      * @param g the Quantik grid with the move of the two players
      * @return the next move chose by the IA
      */
-    public int[] jouerCoupRandom(Grille g) {
+    public int[] jouerCoupRandomSurCaseVide(Grille g) {
 
         int[] coup = {2,0,3};
         String cpStr = "[2,0,3]";
@@ -76,18 +77,67 @@ public class Prolog {
         return res;
     }
 
+    /**
+     * This function transform a pawn in an integer value
+     *
+     * @param pion the pawn to transform
+     * @return the integer value
+     */
+    public int pionToInt(String pion) {
+        switch (pion) {
+            case "cn" :
+                return 0;
+            case "pn" :
+                return 1;
+            case "sn" :
+                return 2;
+            case "tn" :
+                return 3;
+            default :
+                System.out.println("Default pionToInt");
+        }
+        return -1;
+    }
+
+    /**
+     * This function make a request at the prolog file and return the next move
+     *
+     * @param g the Quantik grid
+     * @return the next move
+     */
+    public int[] jouerCoup(Grille g) {
+        Query q1 = consult();
+        String strq = "jouerCoup("+ g.toString() +", L, C, P, [pn],NvPion).";
+        q1 = new Query(strq);
+
+        java.util.Map<String,Term> solution;
+        solution = q1.oneSolution();
+        System.out.println( "L = " + solution.get("L"));
+        System.out.println( "C = " + solution.get("C"));
+        System.out.println( "P = " + solution.get("P"));
+        System.out.println( "NvPion = " + solution.get("NvPion"));
+
+        int[] res = new int[3];
+        res[0] = solution.get("L").intValue();
+        res[1] = solution.get("C").intValue();
+        res[2] = pionToInt(solution.get("P").toString());
+        return res;
+    }
 
 
 
     public static void main( String[] args ) {
-
         Prolog p = new Prolog();
 
         Grille g = new Grille();
-        g.addPawnInGrille(2,0,3);
 
-        p.jouerCoupRandom(g);
+        System.out.println(g.toString());
 
-        System.out.println("S : " + p.random());
+        int[] res = p.jouerCoup(g);
+
+        System.out.println(res[0]);
+        System.out.println(res[1]);
+        System.out.println(res[2]);
+
     }
 }
