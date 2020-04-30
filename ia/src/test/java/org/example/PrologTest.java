@@ -1,6 +1,9 @@
 package org.example;
 
+
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 
 import org.jpl7.Atom;
 import org.jpl7.Query;
@@ -10,95 +13,57 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * Unit test for simple App.
- */
-public class PrologTest
-{
-    /**
-     * Rigorous Test :-)
-     */
-    @Test
-    public void shouldAnswerWithTrue()
-    {
-        assertTrue( true );
-    }
-    String file = ClassLoader.getSystemResource("habite.pl").getPath();
-    Query q1;
+public class PrologTest {
 
-    @Before
-    public void setup(){
-        System.out.println(file.toString());
-        q1 = new Query("consult", new Term[] {new Atom(file)});
-    }
+    Prolog p = new Prolog();
+    Grille g = new Grille();
 
     @Test
-    public void test1() {
-        System.out.println("consult " + (q1.hasSolution() ? "succeeded" : "failed"));
-        Assert.assertEquals(1,1);
+    public void testConsult() {
+        Query q1 = p.consult();
+        assertTrue(q1.hasSolution());
         q1.close();
     }
 
     @Test
-    public void test2(){
-        q1 =
-                new Query(
-                        "habite",
-                        new Term[] {new Atom("fabien"),new Atom("belfort")}
-                );
-        System.out.println(
-                "habite(fabien,belfort) is " +
-                        ( q1.hasSolution() ? "provable" : "not provable" )
-        );
-        q1.close();
-    }
-
-    @Test
-    public void test3(){
-        Variable X = new Variable("X");
-        q1 =
-                new Query(
-                        "habite",
-                        new Term[] {X,new Atom("vesoul")}
-                );
-
-        java.util.Map<String,Term> solution;
-        solution = q1.oneSolution();
-        System.out.println( "first solution of habite(X, vesoul)");
-        System.out.println( "X = " + solution.get("X"));
-        q1.close();
-    }
-
-    @Test
-    public void test4(){
-        Variable X = new Variable("X");
-        q1 =
-                new Query(
-                        "habite",
-                        new Term[] {X,new Atom("vesoul")}
-                );
-        java.util.Map<String,Term>[] solutions = q1.allSolutions();
-        for ( int i=0 ; i < solutions.length ; i++ ) {
-            System.out.println( "X = " + solutions[i].get("X"));
+    public void testRandom() {
+        int r = -1;
+        for (int i = 0; i < 100; i++) {
+            r = p.random();
+            assertTrue(r > -1 && r < 4);
         }
-        q1.close();
     }
 
     @Test
-    public void test5() {
-        java.util.Map <String,Term> solution;
-        Variable Y = new Variable("ville");
-        Variable X = new Variable("X");
-        q1 =
-                new Query(
-                        "habite",
-                        new Term[]{X, Y}
-                );
-
-        while (q1.hasMoreSolutions()) {
-            solution = q1.nextSolution();
-            System.out.println("X = " + solution.get("X") + ", Ville = " + solution.get("ville"));
+    public void testJouerCoupRandomSurCaseVide() {
+        int[] r;
+        for (int i = 0; i < 10; i++) {
+            r = p.jouerCoupRandomSurCaseVide(g);
+            assertTrue(r[0] > -1 && r[0] < 4);
+            assertTrue(r[1] > -1 && r[1] < 4);
+            assertTrue(r[2] > -1 && r[2] < 4);
         }
-        q1.close();
     }
+
+    @Test
+    public void testPionToInt() {
+        assertEquals(0,p.pionToInt("c"));
+        assertEquals(1,p.pionToInt("p"));
+        assertEquals(2,p.pionToInt("s"));
+        assertEquals(3,p.pionToInt("t"));
+        assertEquals(-1,p.pionToInt("x"));
+    }
+
+    @Test
+    public void testJouerCoup() {
+        int[] r;
+        for (int i = 0; i < 10; i++) {
+            r = p.jouerCoup(g);
+            assertTrue(r[0] > -1 && r[0] < 4);
+            assertTrue(r[1] > -1 && r[1] < 4);
+            assertTrue(r[2] > -1 && r[2] < 4);
+        }
+    }
+
+
 }

@@ -298,5 +298,4 @@ test('verifCarre1-1', [true]) :-
     test('jouerCoup12', [true(length(NvPion,0))]) :-
         jouerCoup([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], _, _, _, [pn],NvPion).
 
-
 :-end_tests(chp0).

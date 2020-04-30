@@ -1,5 +1,6 @@
 package org.example;
 
+
 /**
  * The class grille is a class to define a grid for the Quantik game
  * This class add pawn on the grid and save the position of all of
@@ -10,12 +11,12 @@ public class Grille {
     /**
      * The grid of the Quantik game
      */
-    private int grille[][];
+    private int[][] grille;
 
     /**
      * The aviable pawn of the Quantik game
      */
-    private String pionRestant[];
+    private String[] pionRestant;
 
     /**
      * The constructor of the class
@@ -44,6 +45,74 @@ public class Grille {
     }
 
     /**
+     * This function initialize again the grid after the first game
+     */
+    public void reInitGrille(){
+        intitalizeGrille(this.grille);
+    }
+
+    /**
+     * This function return the available pawn
+     *
+     * @return the list of available pawn
+     */
+    public String[] getPionRestant() {
+        return pionRestant;
+    }
+
+    /**
+     * This function return the available pawn in String format
+     *
+     * @return the list of available pawn in String format
+     */
+    public String getPionRestantToString() {
+        StringBuilder str = new StringBuilder("[");
+        int nbPion = pionRestant.length;
+        for (int i = 0; i < nbPion; i++) {
+            str.append(pionRestant[i]);
+            if (i != nbPion -1) {
+                str.append(",");
+            }
+        }
+        str.append("]");
+        return str.toString();
+    }
+
+    /**
+     * This function remove a pawn in the available list pawn
+     *
+     * @param pawn the pawn removed
+     */
+    public void removePionJouer(String pawn) {
+        if (pionRestant.length == 1) {
+            pionRestant[0] = "";
+            return;
+        }
+        int nbPion = pionRestant.length;
+        boolean trouve = false;
+        for (int i = 0; i < nbPion; i++) {
+            if (pionRestant[i].equals(pawn)) {
+                pionRestant[i] = "";
+                nbPion--;
+                trouve = true;
+                break;
+            }
+        }
+        if(!trouve) {
+            return;
+        }
+        String[] tmp = new String[nbPion];
+        for (int i = 0,j = 0; i < nbPion+1; i++,j++) {
+            if (pionRestant[i].equals("")) {
+                pionRestant[i] = "";
+                i++;
+            }
+            tmp[j] = pionRestant[i];
+        }
+        pionRestant = tmp;
+    }
+
+    /**
      * Function who initialize a Quantik grid with a default value
      *
      * @param grille the grid to initialize
@@ -53,7 +122,7 @@ public class Grille {
         int nbLigne = grille[0].length;
         for (int i = 0; i < nbLigne; i++) {
             for (int j = 0; j < nbColonne; j++) {
-                grille[i][j] = -1;
+                grille[i][j] = 0;
             }
         }
     }
@@ -107,7 +176,7 @@ public class Grille {
      * @return the boolean response
      */
     public boolean caseIsFree(int x, int y) {
-        if (grille[x][y] != -1) {
+        if (grille[x][y] != 0) {
             return false;
         }
         return true;
@@ -132,22 +201,22 @@ public class Grille {
     public String toString() {
         int nbColonne = grille.length;
         int nbLigne = grille[0].length;
-        String str = "[";
+        StringBuilder str = new StringBuilder("[");
         for (int i = 0; i < nbLigne; i++) {
-            str += "[";
+            str.append("[");
             for (int j = 0; j < nbColonne; j++) {
-                str += grille[i][j];
+                str.append(grille[i][j]);
                 if  (j != 3) {
-                    str += ",";
+                    str.append(",");
                 }
             }
-            str += "]";
+            str.append("]");
             if (i != 3) {
-                str += ",";
+                str.append(",");
             }
         }
-        str += "]";
-        return str;
+        str.append("]");
+        return str.toString();
     }
 
     /**
@@ -275,5 +344,4 @@ public class Grille {
         }
         return false;
     }
-
 }

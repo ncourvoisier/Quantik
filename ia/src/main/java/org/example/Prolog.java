@@ -54,20 +54,14 @@ public class Prolog {
      * @return the next move chose by the IA
      */
     public int[] jouerCoupRandomSurCaseVide(Grille g) {
-
-        int[] coup = {2,0,3};
-        String cpStr = "[2,0,3]";
+        String cpStr =  g.toString();
 
         Query q1 = consult();
-        String strq = "jouerCoupRandomSurCaseVide(["+cpStr+"],L,C,P).";
+        String strq = "jouerCoupRandomSurCaseVide("+cpStr+",L,C,P).";
         q1 = new Query(strq);
 
         java.util.Map<String,Term> solution;
         solution = q1.oneSolution();
-        System.out.println( "L = " + solution.get("L"));
-        System.out.println( "C = " + solution.get("C"));
-        System.out.println( "P = " + solution.get("P"));
-
 
         int[] res = new int[3];
         res[0] = solution.get("L").intValue();
@@ -85,18 +79,17 @@ public class Prolog {
      */
     public int pionToInt(String pion) {
         switch (pion) {
-            case "cn" :
+            case "c" :
                 return 0;
-            case "pn" :
+            case "p" :
                 return 1;
-            case "sn" :
+            case "s" :
                 return 2;
-            case "tn" :
+            case "t" :
                 return 3;
             default :
-                System.out.println("Default pionToInt");
+                return -1;
         }
-        return -1;
     }
 
     /**
@@ -107,7 +100,7 @@ public class Prolog {
      */
     public int[] jouerCoup(Grille g) {
         Query q1 = consult();
-        String strq = "jouerCoup("+ g.toString() +", L, C, P, [pn],NvPion).";
+        String strq = "jouerCoup("+ g.toString() +", L, C, P, "+ g.getPionRestantToString() +",NvPion).";
         q1 = new Query(strq);
 
         java.util.Map<String,Term> solution;
@@ -115,7 +108,8 @@ public class Prolog {
         System.out.println( "L = " + solution.get("L"));
         System.out.println( "C = " + solution.get("C"));
         System.out.println( "P = " + solution.get("P"));
-        System.out.println( "NvPion = " + solution.get("NvPion"));
+
+        g.removePionJouer(solution.get("P").toString());
 
         int[] res = new int[3];
         res[0] = solution.get("L").intValue();
@@ -128,16 +122,24 @@ public class Prolog {
 
     public static void main( String[] args ) {
         Prolog p = new Prolog();
-
         Grille g = new Grille();
 
-        System.out.println(g.toString());
-
+        System.out.println(g.getPionRestantToString());
         int[] res = p.jouerCoup(g);
 
         System.out.println(res[0]);
         System.out.println(res[1]);
         System.out.println(res[2]);
 
+
+        System.out.println(g.getPionRestantToString());
+
+        int[] re = p.jouerCoup(g);
+
+        System.out.println(re[0]);
+        System.out.println(re[1]);
+        System.out.println(re[2]);
+
+        System.out.println(g.getPionRestantToString());
     }
 }
