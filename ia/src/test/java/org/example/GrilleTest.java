@@ -2,6 +2,8 @@ package org.example;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
+
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -13,6 +15,99 @@ import org.junit.Test;
 public class GrilleTest {
 
     Grille g = new Grille();
+
+    @Test
+    public void testInitStart() {
+        assertEquals("[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]", g.toString());
+        assertEquals("[c,c,p,p,s,s,t,t]", g.getPionRestantToString());
+        g.printGrille();
+    }
+
+    @Test
+    public void testIntToPion() {
+        assertEquals('C', g.intToPion(0));
+        assertEquals('P', g.intToPion(1));
+        assertEquals('S', g.intToPion(2));
+        assertEquals('T', g.intToPion(3));
+        assertEquals('Z', g.intToPion(4));
+    }
+
+    @Test
+    public void testCaseIsFree() {
+        assertTrue(g.caseIsFree(0,0));
+        g.addPawnInGrille(0,0,1);
+        assertFalse(g.caseIsFree(0,0));
+    }
+
+    @Test
+    public void testReInitGrille() {
+        assertEquals("[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]", g.toString());
+        g.addPawnInGrille(0,0,1);
+        g.addPawnInGrille(1,1,2);
+        g.addPawnInGrille(2,3,3);
+        assertEquals("[[1,0,0,0],[0,2,0,0],[0,0,0,3],[0,0,0,0]]", g.toString());
+        g.reInitGrille();
+        assertEquals("[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]", g.toString());
+    }
+
+    @Test
+    public void testGetPionRestant() {
+        String[] pr = {"c","c","p","p","s","s","t","t"};
+        String[] res = g.getPionRestant();
+        for (int i = 0; i < 7; i++) {
+            assertEquals(pr[i], res[i]);
+        }
+    }
+
+    @Test
+    public void testRemovePionJouer1() {
+        assertEquals("[c,c,p,p,s,s,t,t]",g.getPionRestantToString());
+        assertEquals(8,g.getPionRestant().length);
+        g.removePionJouer("c");
+        assertEquals("[c,p,p,s,s,t,t]",g.getPionRestantToString());
+        assertEquals(7,g.getPionRestant().length);
+        g.removePionJouer("c");
+        assertEquals("[p,p,s,s,t,t]",g.getPionRestantToString());
+        assertEquals(6,g.getPionRestant().length);
+
+        g.removePionJouer("p");
+        assertEquals("[p,s,s,t,t]",g.getPionRestantToString());
+        assertEquals(5,g.getPionRestant().length);
+        g.removePionJouer("p");
+        assertEquals("[s,s,t,t]",g.getPionRestantToString());
+        assertEquals(4,g.getPionRestant().length);
+
+        g.removePionJouer("s");
+        assertEquals("[s,t,t]",g.getPionRestantToString());
+        assertEquals(3,g.getPionRestant().length);
+        g.removePionJouer("s");
+        assertEquals("[t,t]",g.getPionRestantToString());
+        assertEquals(2,g.getPionRestant().length);
+
+        g.removePionJouer("t");
+        assertEquals("[t]",g.getPionRestantToString());
+        assertEquals(1,g.getPionRestant().length);
+        g.removePionJouer("t");
+        assertEquals("[]",g.getPionRestantToString());
+        assertEquals(1,g.getPionRestant().length);
+    }
+
+    @Test
+    public void testRemovePionJouer2() {
+        assertEquals("[c,c,p,p,s,s,t,t]", g.getPionRestantToString());
+        assertEquals(8, g.getPionRestant().length);
+        g.removePionJouer("c");
+        assertEquals("[c,p,p,s,s,t,t]", g.getPionRestantToString());
+        assertEquals(7, g.getPionRestant().length);
+        g.removePionJouer("c");
+        assertEquals("[p,p,s,s,t,t]", g.getPionRestantToString());
+        assertEquals(6, g.getPionRestant().length);
+
+        g.removePionJouer("c");
+        assertEquals("[p,p,s,s,t,t]", g.getPionRestantToString());
+        assertEquals(6, g.getPionRestant().length);
+
+    }
 
     @Test
     public void moveFinalLine1() {
