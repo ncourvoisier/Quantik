@@ -330,6 +330,54 @@ prioriteListe(Grid, Liste):-
     flatten_level1([ListeP3,ListeP1,ListeP0,ListeP2], [], Liste).
 
 
+verifAll(Grid,L,C,P) :-
+    Stop = 0,
+    (verifColonne(Grid,L,P) ->
+        Stop = 1
+    ;
+        write("")
+    ),
+    (verifColonne(Grid,C,P) ->
+        Stop = 1
+    ;
+        write("")
+    ),
+    (verifCarre(Grid,P,L,C) ->
+        Stop = 1
+    ;
+        write("")
+    ),
+    (Stop == 1 ->
+        write("true"),true
+    ;
+        write("false"),false
+    ),
+    !.
+
+
+pionRandom(PionRestant,P) :-
+    length(PionRestant,S),
+    random(0,S,P1),
+    nth0(P1,PionRestant,P).
+
+jouerPosition(Grid,[],_,_,_,_) :-
+    !.
+jouerPosition(Grid,[T|Res], PionRestant, L,C,P) :-
+    nth0(0,T,L1),
+    nth0(1,T,C1),
+    write(L1),
+    writeln(C1),
+    pionRandom(PionResant,P1),
+    verifAll(Grid,L1,C1,P1),
+    jouerPosition(Grid,Res,PionRestant,L,C,P).
+
+jouerCoupHeuristique(Grid, PionRestant, L,C,P) :-
+    prioriteListe(Grid, Res),
+    jouerPosition(Grid,Res,PionRestant,L,C,P).
+
+
+
+
 % Les tests unitaires :
 :-begin_tests(chp0).
 
@@ -355,7 +403,7 @@ prioriteListe(Grid, Liste):-
     test('verifColonne5', [fail]) :-
         verifColonne([[cb,0,0,0],[0,cn,0,0],[0,cb,0,0],[0,0,0,cb]],0,cn).
 
-test('verifCarre1-1', [true]) :-
+    test('verifCarre1-1', [true]) :-
         verifCarre([[0,0,0,0],[0,a,0,0],[0,0,0,0],[0,0,0,0]], a, 0, 0).
     test('verifCarre1-2', [true]) :-
         verifCarre([[0,0,0,0],[0,a,0,0],[0,0,0,0],[0,0,0,0]], a, 1, 0).

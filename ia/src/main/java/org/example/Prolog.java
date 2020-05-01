@@ -118,6 +118,31 @@ public class Prolog {
         return res;
     }
 
+    /**
+     * This function make a request at the prolog file and return the next move with the heuristique
+     *
+     * @param g the Quantik grid
+     * @return the next move
+     */
+    public int[] jouerCoupHeuristique(Grille g) {
+        Query q1 = consult();
+        String str = "jouerCoupHeuristique(" + g.toString() + "," + g.getPionRestantToString() + ",L,C,P).";
+        q1 = new Query(str);
+
+        java.util.Map<String,Term> solution;
+        solution = q1.oneSolution();
+        System.out.println( "L = " + solution.get("L"));
+        System.out.println( "C = " + solution.get("C"));
+        System.out.println( "P = " + solution.get("P"));
+
+        g.removePionJouer(solution.get("P").toString());
+
+        int[] res = new int[3];
+        res[0] = solution.get("L").intValue();
+        res[1] = solution.get("C").intValue();
+        res[2] = pionToInt(solution.get("P").toString());
+        return res;
+    }
 
 
     public static void main( String[] args ) {
