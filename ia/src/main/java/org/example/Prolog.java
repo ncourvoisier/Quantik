@@ -105,9 +105,9 @@ public class Prolog {
 
         java.util.Map<String,Term> solution;
         solution = q1.oneSolution();
-        System.out.println( "L = " + solution.get("L"));
-        System.out.println( "C = " + solution.get("C"));
-        System.out.println( "P = " + solution.get("P"));
+        //System.out.println( "L = " + solution.get("L"));
+        //System.out.println( "C = " + solution.get("C"));
+        //System.out.println( "P = " + solution.get("P"));
 
         g.removePionJouer(solution.get("P").toString());
 
@@ -131,9 +131,9 @@ public class Prolog {
 
         java.util.Map<String,Term> solution;
         solution = q1.oneSolution();
-        System.out.println( "L = " + solution.get("L"));
-        System.out.println( "C = " + solution.get("C"));
-        System.out.println( "P = " + solution.get("P"));
+        //System.out.println( "L = " + solution.get("L"));
+        //System.out.println( "C = " + solution.get("C"));
+        //System.out.println( "P = " + solution.get("P"));
 
         g.removePionJouer(solution.get("P").toString());
 
@@ -149,22 +149,10 @@ public class Prolog {
         Prolog p = new Prolog();
         Grille g = new Grille();
 
-        System.out.println(g.getPionRestantToString());
-        int[] res = p.jouerCoup(g);
+        int[] res = p.jouerCoupHeuristique(g);
 
         System.out.println(res[0]);
         System.out.println(res[1]);
         System.out.println(res[2]);
-
-
-        System.out.println(g.getPionRestantToString());
-
-        int[] re = p.jouerCoup(g);
-
-        System.out.println(re[0]);
-        System.out.println(re[1]);
-        System.out.println(re[2]);
-
-        System.out.println(g.getPionRestantToString());
     }
 }

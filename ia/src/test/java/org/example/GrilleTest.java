@@ -5,8 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 
 
-import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -25,27 +23,27 @@ public class GrilleTest {
 
     @Test
     public void testIntToPion() {
-        assertEquals('C', g.intToPion(0));
-        assertEquals('P', g.intToPion(1));
-        assertEquals('S', g.intToPion(2));
-        assertEquals('T', g.intToPion(3));
-        assertEquals('Z', g.intToPion(4));
+        assertEquals('C', g.StringToPion("c"));
+        assertEquals('P', g.StringToPion("p"));
+        assertEquals('S', g.StringToPion("s"));
+        assertEquals('T', g.StringToPion("t"));
+        assertEquals('Z', g.StringToPion("0"));
     }
 
     @Test
     public void testCaseIsFree() {
         assertTrue(g.caseIsFree(0,0));
-        g.addPawnInGrille(0,0,1);
+        g.addPawnInGrille(0,0,"c");
         assertFalse(g.caseIsFree(0,0));
     }
 
     @Test
     public void testReInitGrille() {
         assertEquals("[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]", g.toString());
-        g.addPawnInGrille(0,0,1);
-        g.addPawnInGrille(1,1,2);
-        g.addPawnInGrille(2,3,3);
-        assertEquals("[[1,0,0,0],[0,2,0,0],[0,0,0,3],[0,0,0,0]]", g.toString());
+        g.addPawnInGrille(0,0,"c");
+        g.addPawnInGrille(1,1,"p");
+        g.addPawnInGrille(2,3,"s");
+        assertEquals("[[c,0,0,0],[0,p,0,0],[0,0,0,s],[0,0,0,0]]", g.toString());
         g.reInitGrille();
         assertEquals("[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]", g.toString());
     }
@@ -109,85 +107,86 @@ public class GrilleTest {
 
     }
 
+
     @Test
     public void moveFinalLine1() {
-        g.addPawnInGrille(0,0,0);
-        g.addPawnInGrille(0,1,1);
-        g.addPawnInGrille(0,2,2);
-        g.addPawnInGrille(0,3,3);
+        g.addPawnInGrille(0,0,"c");
+        g.addPawnInGrille(0,1,"p");
+        g.addPawnInGrille(0,2,"s");
+        g.addPawnInGrille(0,3,"t");
         assertTrue(g.isFinalMove());
     }
 
     @Test
     public void moveFinalFalse() {
-        g.addPawnInGrille(0,0,0);
-        g.addPawnInGrille(0,1,1);
-        g.addPawnInGrille(0,2,2);
-        g.addPawnInGrille(0,3,2);
+        g.addPawnInGrille(0,0,"c");
+        g.addPawnInGrille(0,1,"p");
+        g.addPawnInGrille(0,2,"s");
+        g.addPawnInGrille(0,3,"s");
         assertFalse(g.isFinalMove());
     }
 
     @Test
     public void moveFinalColumn1() {
-        g.addPawnInGrille(0,0,0);
-        g.addPawnInGrille(1,0,1);
-        g.addPawnInGrille(2,0,2);
-        g.addPawnInGrille(3,0,3);
+        g.addPawnInGrille(0,0,"c");
+        g.addPawnInGrille(1,0,"p");
+        g.addPawnInGrille(2,0,"s");
+        g.addPawnInGrille(3,0,"t");
         assertTrue(g.isFinalMove());
     }
 
     @Test
     public void moveFinalColumn2() {
-        g.addPawnInGrille(0,0,0);
-        g.addPawnInGrille(3,0,1);
-        g.addPawnInGrille(2,0,2);
-        g.addPawnInGrille(1,0,3);
+        g.addPawnInGrille(0,0,"c");
+        g.addPawnInGrille(3,0,"p");
+        g.addPawnInGrille(2,0,"s");
+        g.addPawnInGrille(1,0,"t");
         assertTrue(g.isFinalMove());
     }
 
 
     @Test
     public void moveFinalFalseColumn() {
-        g.addPawnInGrille(0,0,0);
-        g.addPawnInGrille(2,0,1);
-        g.addPawnInGrille(2,0,2);
-        g.addPawnInGrille(3,0,3);
+        g.addPawnInGrille(0,0,"c");
+        g.addPawnInGrille(2,0,"p");
+        g.addPawnInGrille(2,0,"s");
+        g.addPawnInGrille(3,0,"t");
         assertFalse(g.isFinalMove());
     }
 
     @Test
     public void moveFinalSquare1() {
-        g.addPawnInGrille(0,0,0);
-        g.addPawnInGrille(0,1,1);
-        g.addPawnInGrille(1,0,2);
-        g.addPawnInGrille(1,1,3);
+        g.addPawnInGrille(0,0,"c");
+        g.addPawnInGrille(0,1,"p");
+        g.addPawnInGrille(1,0,"s");
+        g.addPawnInGrille(1,1,"t");
         assertTrue(g.isFinalMove());
     }
 
     @Test
     public void moveFinalSquare2() {
-        g.addPawnInGrille(0,2,0);
-        g.addPawnInGrille(0,3,1);
-        g.addPawnInGrille(1,2,2);
-        g.addPawnInGrille(1,3,3);
+        g.addPawnInGrille(0,2,"c");
+        g.addPawnInGrille(0,3,"p");
+        g.addPawnInGrille(1,2,"s");
+        g.addPawnInGrille(1,3,"t");
         assertTrue(g.isFinalMove());
     }
 
     @Test
     public void moveFinalSquare3() {
-        g.addPawnInGrille(2,0,0);
-        g.addPawnInGrille(2,1,1);
-        g.addPawnInGrille(3,0,2);
-        g.addPawnInGrille(3,1,3);
+        g.addPawnInGrille(2,0,"c");
+        g.addPawnInGrille(2,1,"p");
+        g.addPawnInGrille(3,0,"s");
+        g.addPawnInGrille(3,1,"t");
         assertTrue(g.isFinalMove());
     }
 
     @Test
     public void moveFinalSquare4() {
-        g.addPawnInGrille(2,2,0);
-        g.addPawnInGrille(2,3,1);
-        g.addPawnInGrille(3,2,2);
-        g.addPawnInGrille(3,3,3);
+        g.addPawnInGrille(2,2,"c");
+        g.addPawnInGrille(2,3,"p");
+        g.addPawnInGrille(3,2,"s");
+        g.addPawnInGrille(3,3,"t");
         assertTrue(g.isFinalMove());
     }
 
