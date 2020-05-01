@@ -297,6 +297,38 @@ poidsMapping(Grid, PoidsMap):-
     PoidsMap = [[_,_,_,_],[_,_,_,_],[_,_,_,_],[_,_,_,_]],
     poidsMappingApply(PoidsMap, Poids, 0, 0),!.
 
+apparieCase(0, [ListeP0,ListeP1,ListeP2,ListeP3], [[[CurrC,CurrL]|ListeP0],ListeP1,ListeP2,ListeP3], CurrL, CurrC).
+apparieCase(1, [ListeP0,ListeP1,ListeP2,ListeP3], [ListeP0,[[CurrC,CurrL]|ListeP1],ListeP2,ListeP3], CurrL, CurrC).
+apparieCase(2, [ListeP0,ListeP1,ListeP2,ListeP3], [ListeP0,ListeP1,[[CurrC,CurrL]|ListeP2],ListeP3], CurrL, CurrC).
+apparieCase(3, [ListeP0,ListeP1,ListeP2,ListeP3], [ListeP0,ListeP1,ListeP2,[[CurrC,CurrL]|ListeP3]], CurrL, CurrC).
+
+prioriteLigne([], PrioListes, PrioListes, _, _):-!.
+prioriteLigne([Case|Ligne], PrioListes, NvPrioListes, CurrL, CurrC):-
+    apparieCase(Case, PrioListes, NvPrioListesApresAppariement, CurrL, CurrC),
+    NextCurrC is CurrC + 1,
+    prioriteLigne(Ligne, NvPrioListesApresAppariement, NvPrioListes, CurrL, NextCurrC).
+
+prioriteListe([], PrioListes, PrioListes, _, _):-!.
+prioriteListe([Ligne|PoidsMap], PrioListes, NvPrioListes, CurrL, CurrC):-
+    prioriteLigne(Ligne, PrioListes, NvPrioListesApresLigne, CurrL, CurrC),
+    NextCurrL is CurrL + 1,
+    prioriteListe(PoidsMap, NvPrioListesApresLigne, NvPrioListes, NextCurrL, CurrC).
+
+flatten_level2([], Flat, Flat).
+flatten_level2([Elem|Liste], Flat, NvFlat):-
+    append(Flat, [Elem], NvFlatPlusElem),
+    flatten_level2(Liste, NvFlatPlusElem, NvFlat).
+
+flatten_level1([], Flat, Flat):-!.
+flatten_level1([Liste|Q], Flat, NvFlat):-
+    flatten_level2(Liste, Flat, NvFlatApr2),
+    flatten_level1(Q, NvFlatApr2, NvFlat).
+
+prioriteListe(Grid, Liste):-
+    poidsMapping(Grid, PoidsMap),
+    prioriteListe(PoidsMap, [[],[],[],[]], [ListeP0, ListeP1, ListeP2, ListeP3], 0, 0),
+    flatten_level1([ListeP3,ListeP1,ListeP0,ListeP2], [], Liste).
+
 
 % Les tests unitaires :
 :-begin_tests(chp0).
