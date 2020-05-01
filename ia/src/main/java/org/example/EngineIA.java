@@ -14,6 +14,27 @@ import java.util.Scanner;
  */
 public class EngineIA {
 
+
+    public static String intToStringPawn(int p) {
+        switch(p) {
+            case 0 : return "c";
+            case 1 : return "p";
+            case 2 : return "s";
+            case 3 : return "t";
+            default: return "";
+        }
+    }
+
+    public static int stringToIntPawn(String p) {
+        switch(p) {
+            case "c" : return 0;
+            case "p" : return 1;
+            case "s" : return 2;
+            case "t" : return 3;
+            default: return -1;
+        }
+    }
+
     /**
      * This function realize a communication with player when he plays in second
      *
@@ -54,7 +75,7 @@ public class EngineIA {
             return -1;
         }
 
-        g.addPawnInGrille(xRecv, yRecv, pRecv);
+        g.addPawnInGrille(xRecv, yRecv, intToStringPawn(pRecv));
 
         System.out.println("The opponent played :");
         g.printGrille();
@@ -73,7 +94,7 @@ public class EngineIA {
         DOS.writeInt(pSend); //Envoie de pSend
         DOS.writeInt(cSend); //Envoie de cSend
 
-        g.addPawnInGrille(xSend, ySend, pSend);
+        g.addPawnInGrille(xSend, ySend, intToStringPawn(pSend));
 
         System.out.println("The grid after your move :");
         g.printGrille();
@@ -123,7 +144,7 @@ public class EngineIA {
         DOS.writeInt(pSend); //Envoie de p
         DOS.writeInt(cSend); //Envoie de c
 
-        g.addPawnInGrille(xSend, ySend, pSend);
+        g.addPawnInGrille(xSend, ySend, intToStringPawn(pSend));
 
         System.out.println("The grid after your move :");
         g.printGrille();
@@ -142,7 +163,7 @@ public class EngineIA {
             return -1;
         }
 
-        g.addPawnInGrille(xRecv, yRecv, pRecv);
+        g.addPawnInGrille(xRecv, yRecv, intToStringPawn(pRecv));
 
         System.out.println("The opponent played :");
         g.printGrille();
@@ -158,15 +179,8 @@ public class EngineIA {
         int port = 2567;
         String addr = "127.0.0.1";
         Scanner sc = new Scanner(System.in);
-
         Grille g = new Grille();
-
-        //Prolog p = new Prolog();
-        //Query consult = Prolog.consult();
-        //int res = p.random();
-        //System.out.println("Le resultat duprolog : " + res);
-
-
+        Prolog p = new Prolog();
         g.printGrille();
 
         try{
@@ -175,7 +189,6 @@ public class EngineIA {
             DataOutputStream DOS = new DataOutputStream(sock.getOutputStream());
 
             int playFirst = DIS.readInt();
-
             int end = 0;
             int i = 0;
 

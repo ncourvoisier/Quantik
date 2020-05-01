@@ -1,10 +1,6 @@
 package org.example;
 
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertEquals;
-
 import org.jpl7.Atom;
 import org.jpl7.Query;
 import org.jpl7.Term;
@@ -12,6 +8,8 @@ import org.jpl7.Variable;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class PrologTest {
 
@@ -114,6 +112,29 @@ public class PrologTest {
         assertEquals(1,r[0]);
         assertEquals(1,r[1]);
         assertEquals(3,r[2]);
+    }
+
+    @Test
+    public void testHeuristique5() {
+        g.addPawnInGrille(0,0,"c");
+        g.addPawnInGrille(0,1,"p");
+        g.addPawnInGrille(1,2,"s");
+        g.addPawnInGrille(1,3,"t");
+
+        g.addPawnInGrille(2,0,"s");
+        g.addPawnInGrille(2,1,"t");
+        g.addPawnInGrille(2,2,"c");
+        g.addPawnInGrille(2,3,"p");
+
+        try {
+            int[] r = p.jouerCoupHeuristique(g);
+            assertEquals(1,r[0]);
+            assertEquals(1,r[1]);
+            assertEquals(3,r[2]);
+        } catch (NullPointerException e) {
+            Assert.assertNull(e.getMessage());
+        }
+
     }
 
 }
