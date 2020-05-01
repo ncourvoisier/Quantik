@@ -405,6 +405,8 @@ jouerCoupHeuristique(Grid, PionRestant, L,C,P) :-
 
 
 
+
+
 % Les tests unitaires :
 :-begin_tests(chp0).
 
