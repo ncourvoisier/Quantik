@@ -588,11 +588,118 @@ jouerCoupHeuristique(Grid, PionRestant, L,C,P) :-
         jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,_).
     test('jouerCoupHeuristique3', [all([L,C] == [[3,3]])]) :-
         jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,_).
-    test('jouerCoupHeuristique4', [all([L,C] == [[3,3]])]) :-
-        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,_).
+
+    test('jouerCoupHeuristique4', [all([L,C,P] == [[0,3,t]])]) :-
+        jouerCoupHeuristique([[c,p,s,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique5', [all([L,C,P] == [[1,3,t]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[c,p,s,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique6', [all([L,C,P] == [[2,3,t]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[c,p,s,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique7', [all([L,C,P] == [[3,3,t]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[c,p,s,0]],[c,c,p,p,s,s,t,t],L,C,P).
+
+    test('jouerCoupHeuristique8', [all([L,C,P] == [[0,2,s]])]) :-
+        jouerCoupHeuristique([[c,p,0,t],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique9', [all([L,C,P] == [[1,2,s]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[c,p,0,t],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique10', [all([L,C,P] == [[2,2,s]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[c,p,0,t],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique11', [all([L,C,P] == [[3,2,s]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[c,p,0,t]],[c,c,p,p,s,s,t,t],L,C,P).
+
+    test('jouerCoupHeuristique12', [all([L,C,P] == [[0,1,p]])]) :-
+        jouerCoupHeuristique([[c,0,s,t],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique13', [all([L,C,P] == [[1,1,p]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[c,0,s,t],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique14', [all([L,C,P] == [[2,1,p]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[c,0,s,t],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique15', [all([L,C,P] == [[3,1,p]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[c,0,s,t]],[c,c,p,p,s,s,t,t],L,C,P).
+
+    test('jouerCoupHeuristique16', [all([L,C,P] == [[0,0,c]])]) :-
+        jouerCoupHeuristique([[0,p,s,t],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique17', [all([L,C,P] == [[1,0,c]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,p,s,t],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique18', [all([L,C,P] == [[2,0,c]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,p,s,t],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique19', [all([L,C,P] == [[3,0,c]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,p,s,t]],[c,c,p,p,s,s,t,t],L,C,P).
+
+
+    test('jouerCoupHeuristique20', [all([L,C,P] == [[3,0,t]])]) :-
+        jouerCoupHeuristique([[c,0,0,0],[p,0,0,0],[s,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique21', [all([L,C,P] == [[3,1,t]])]) :-
+        jouerCoupHeuristique([[0,c,0,0],[0,p,0,0],[0,s,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique22', [all([L,C,P] == [[3,2,t]])]) :-
+        jouerCoupHeuristique([[0,0,c,0],[0,0,p,0],[0,0,s,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique23', [all([L,C,P] == [[3,3,t]])]) :-
+        jouerCoupHeuristique([[0,0,0,c],[0,0,0,p],[0,0,0,s],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+
+    test('jouerCoupHeuristique24', [all([L,C,P] == [[2,0,s]])]) :-
+        jouerCoupHeuristique([[c,0,0,0],[p,0,0,0],[0,0,0,0],[t,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique25', [all([L,C,P] == [[2,1,s]])]) :-
+        jouerCoupHeuristique([[0,c,0,0],[0,p,0,0],[0,0,0,0],[0,t,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique26', [all([L,C,P] == [[2,2,s]])]) :-
+        jouerCoupHeuristique([[0,0,c,0],[0,0,p,0],[0,0,0,0],[0,0,t,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique27', [all([L,C,P] == [[2,3,s]])]) :-
+        jouerCoupHeuristique([[0,0,0,c],[0,0,0,p],[0,0,0,0],[0,0,0,t]],[c,c,p,p,s,s,t,t],L,C,P).
+
+    test('jouerCoupHeuristique28', [all([L,C,P] == [[1,0,p]])]) :-
+        jouerCoupHeuristique([[c,0,0,0],[0,0,0,0],[s,0,0,0],[t,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique29', [all([L,C,P] == [[1,1,p]])]) :-
+        jouerCoupHeuristique([[0,c,0,0],[0,0,0,0],[0,s,0,0],[0,t,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique30', [all([L,C,P] == [[1,2,p]])]) :-
+        jouerCoupHeuristique([[0,0,c,0],[0,0,0,0],[0,0,s,0],[0,0,t,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique31', [all([L,C,P] == [[1,3,p]])]) :-
+        jouerCoupHeuristique([[0,0,0,c],[0,0,0,0],[0,0,0,s],[0,0,0,t]],[c,c,p,p,s,s,t,t],L,C,P).
+
+    test('jouerCoupHeuristique32', [all([L,C,P] == [[0,0,c]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[p,0,0,0],[s,0,0,0],[t,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique33', [all([L,C,P] == [[0,1,c]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,p,0,0],[0,s,0,0],[0,t,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique34', [all([L,C,P] == [[0,2,c]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,p,0],[0,0,s,0],[0,0,t,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique35', [all([L,C,P] == [[0,3,c]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,p],[0,0,0,s],[0,0,0,t]],[c,c,p,p,s,s,t,t],L,C,P).
+
+
+    test('jouerCoupHeuristique36', [all([L,C,P] == [[1,1,t]])]) :-
+        jouerCoupHeuristique([[c,s,0,0],[p,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique37', [all([L,C,P] == [[1,0,s]])]) :-
+        jouerCoupHeuristique([[c,p,0,0],[0,t,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique38', [all([L,C,P] == [[0,1,p]])]) :-
+        jouerCoupHeuristique([[c,0,0,0],[s,t,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique39', [all([L,C,P] == [[0,0,c]])]) :-
+        jouerCoupHeuristique([[0,p,0,0],[s,t,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+
+    test('jouerCoupHeuristique40', [all([L,C,P] == [[1,3,t]])]) :-
+        jouerCoupHeuristique([[0,0,c,p],[0,0,s,0],[0,0,0,0],[t,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique41', [all([L,C,P] == [[1,2,s]])]) :-
+        jouerCoupHeuristique([[0,0,c,p],[0,0,0,t],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique42', [all([L,C,P] == [[0,3,p]])]) :-
+        jouerCoupHeuristique([[0,0,c,0],[0,0,s,t],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique43', [all([L,C,P] == [[0,2,c]])]) :-
+        jouerCoupHeuristique([[0,0,0,p],[0,0,s,t],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+
+    test('jouerCoupHeuristique44', [all([L,C,P] == [[3,1,t]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[c,p,0,0],[s,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique45', [all([L,C,P] == [[3,0,s]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[c,p,0,0],[0,t,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique46', [all([L,C,P] == [[2,1,p]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[c,0,0,0],[s,t,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique47', [all([L,C,P] == [[2,0,c]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,p,0,0],[s,t,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
+
+    test('jouerCoupHeuristique48', [all([L,C,P] == [[3,3,t]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,c,p],[0,0,s,0]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique49', [all([L,C,P] == [[3,2,s]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,c,p],[0,0,0,t]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique50', [all([L,C,P] == [[2,3,p]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,c,0],[0,0,s,t]],[c,c,p,p,s,s,t,t],L,C,P).
+    test('jouerCoupHeuristique51', [all([L,C,P] == [[2,2,c]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,p],[0,0,s,t]],[c,c,p,p,s,s,t,t],L,C,P).
 
     test('jouerCoupHeuristiqueTheLastChance', [true]):-
         jouerCoupHeuristique([[c,p,0,0],[0,0,0,t],[p,c,0,0],[0,0,t,s]],[c,c,p,p,s,s,t,t],1,2,_).
-
 
 :-end_tests(chp0).

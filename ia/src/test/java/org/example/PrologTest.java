@@ -82,9 +82,38 @@ public class PrologTest {
 
     @Test
     public void testHeuristique2() {
-        g.addPawnInGrille(0,0,"p");
-        System.out.println(g.toString());
+        g.addPawnInGrille(0,0,"c");
+        g.addPawnInGrille(0,1,"p");
+        g.addPawnInGrille(0,2,"s");
+
+        int[] r = p.jouerCoupHeuristique(g);
+        assertEquals(0,r[0]);
+        assertEquals(3,r[1]);
+        assertEquals(3,r[2]);
     }
 
+    @Test
+    public void testHeuristique3() {
+        g.addPawnInGrille(0,0,"c");
+        g.addPawnInGrille(1,0,"p");
+        g.addPawnInGrille(2,0,"s");
+
+        int[] r = p.jouerCoupHeuristique(g);
+        assertEquals(3,r[0]);
+        assertEquals(0,r[1]);
+        assertEquals(3,r[2]);
+    }
+
+    @Test
+    public void testHeuristique4() {
+        g.addPawnInGrille(0,0,"c");
+        g.addPawnInGrille(0,1,"p");
+        g.addPawnInGrille(1,0,"s");
+
+        int[] r = p.jouerCoupHeuristique(g);
+        assertEquals(1,r[0]);
+        assertEquals(1,r[1]);
+        assertEquals(3,r[2]);
+    }
 
 }
