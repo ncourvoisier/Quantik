@@ -352,6 +352,12 @@ verifAll(Grid,L,C,P) :-
     ;
         write("")
     ),
+    retournePionDansCase(Grid,L,C,X),
+    (X == 0 ->
+        write("")
+    ;
+        Stop = 1
+    ),
     (Stop == 1 ->
         false
     ;
@@ -382,6 +388,7 @@ jouerPosition(Grid,[T|Res], PionRestant, L,C,P) :-
     nth0(0,T,L1),
     nth0(1,T,C1),
     pionRandom(PionRestant,P1),
+    write(P1),
     (verifAll(Grid,L1,C1,P1) ->
         L = L1,
         C = C1,
@@ -403,8 +410,12 @@ jouerCoupHeuristique(Grid, PionRestant, L,C,P) :-
     jouerPosition(Grid,Res,PionRestant,L,C,P).
 
 
-
-
+joueTest(Grid, L1,C1,P1) :-
+    (verifAll(Grid,L1,C1,P1) ->
+        write("true"),true
+    ;
+        write("false"),false
+    ),!.
 
 
 % Les tests unitaires :
