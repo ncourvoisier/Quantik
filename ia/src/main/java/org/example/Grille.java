@@ -107,6 +107,9 @@ public class Grille {
                 pionRestant[i] = "";
                 i++;
             }
+            if (i > nbPion) {
+                break;
+            }
             tmp[j] = pionRestant[i];
         }
         pionRestant = tmp;
