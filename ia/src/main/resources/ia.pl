@@ -591,7 +591,8 @@ jouerCoupHeuristique(Grid, PionRestant, L,C,P) :-
     test('jouerCoupHeuristique4', [all([L,C] == [[3,3]])]) :-
         jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,_).
 
-
+    test('jouerCoupHeuristiqueTheLastChance', [true]):-
+        jouerCoupHeuristique([[c,p,0,0],[0,0,0,t],[p,c,0,0],[0,0,t,s]],[c,c,p,p,s,s,t,t],1,2,_).
 
 
 :-end_tests(chp0).
