@@ -11,7 +11,7 @@ public class Grille {
     /**
      * The grid of the Quantik game
      */
-    private int[][] grille;
+    private String[][] grille;
 
     /**
      * The aviable pawn of the Quantik game
@@ -22,7 +22,7 @@ public class Grille {
      * The constructor of the class
      */
     Grille () {
-        this.grille = new int[4][4];
+        this.grille = new String[4][4];
         intitalizeGrille(this.grille);
         this.pionRestant = new String[8];
         initializePionRestant(this.pionRestant);
@@ -120,31 +120,31 @@ public class Grille {
      *
      * @param grille the grid to initialize
      */
-    private void intitalizeGrille(int[][] grille) {
+    private void intitalizeGrille(String[][] grille) {
         int nbColonne = grille.length;
         int nbLigne = grille[0].length;
         for (int i = 0; i < nbLigne; i++) {
             for (int j = 0; j < nbColonne; j++) {
-                grille[i][j] = 0;
+                grille[i][j] = "0";
             }
         }
     }
 
     /**
-     * Function who transform an int to a pawn value
+     * Function who transform a string to a pawn value
      *
      * @param p the int to convert
      * @return the pawn converted
      */
-    public char intToPion(int p) {
+    public char StringToPion(String p) {
         switch (p) {
-            case 0:
+            case "c":
                 return 'C';
-            case 1:
+            case "p":
                 return 'P';
-            case 2:
+            case "s":
                 return 'S';
-            case 3:
+            case "t":
                 return 'T';
             default:
                 return 'Z';
@@ -159,7 +159,7 @@ public class Grille {
         int nbLigne = grille[0].length;
         for (int i = 0; i < nbLigne; i++) {
             for (int j = 0; j < nbColonne; j++) {
-                System.out.print("" + intToPion(grille[i][j]));
+                System.out.print("" + StringToPion(grille[i][j]));
                 if (j != 3) {
                     System.out.print("|");
                 }
@@ -179,7 +179,7 @@ public class Grille {
      * @return the boolean response
      */
     public boolean caseIsFree(int x, int y) {
-        if (grille[x][y] != 0) {
+        if (grille[x][y] != "0") {
             return false;
         }
         return true;
@@ -192,7 +192,7 @@ public class Grille {
      * @param y coordiante y in the grid
      * @param p the pawn played
      */
-    public void addPawnInGrille(int x, int y, int p) {
+    public void addPawnInGrille(int x, int y, String p) {
         grille[x][y] = p;
     }
 
@@ -239,19 +239,19 @@ public class Grille {
         boolean T = false;
         for (int i = xs; i < xa; i++) {
             for (int j = ys; j < ya; j++) {
-                if(grille[i][j] != -1) {
+                if(grille[i][j] != "0") {
                     gagne++;
                 }
-                if(grille[i][j] == 0) {
+                if(grille[i][j] == "c") {
                     C = true;
                 }
-                if(grille[i][j] == 1) {
+                if(grille[i][j] == "p") {
                     P = true;
                 }
-                if(grille[i][j] == 2) {
+                if(grille[i][j] == "s") {
                     S = true;
                 }
-                if(grille[i][j] == 3) {
+                if(grille[i][j] == "t") {
                     T = true;
                 }
             }
@@ -279,19 +279,19 @@ public class Grille {
         // Check if one column is final
         for (int i = 0; i < nbLigne; i++) {
             for (int j = 0; j < nbColonne; j++) {
-                if(grille[i][j] != -1) {
+                if(grille[i][j] != "0") {
                     gagne++;
                 }
-                if(grille[i][j] == 0) {
+                if(grille[i][j] == "c") {
                     C = true;
                 }
-                if(grille[i][j] == 1) {
+                if(grille[i][j] == "p") {
                     P = true;
                 }
-                if(grille[i][j] == 2) {
+                if(grille[i][j] == "s") {
                     S = true;
                 }
-                if(grille[i][j] == 3) {
+                if(grille[i][j] == "t") {
                     T = true;
                 }
             }
@@ -308,19 +308,19 @@ public class Grille {
         // Check if one line is final
         for (int i = 0; i < nbLigne; i++) {
             for (int j = 0; j < nbColonne; j++) {
-                if(grille[j][i] != -1) {
+                if(grille[j][i] != "0") {
                     gagne++;
                 }
-                if(grille[j][i] == 0) {
+                if(grille[j][i] == "c") {
                     C = true;
                 }
-                if(grille[j][i] == 1) {
+                if(grille[j][i] == "p") {
                     P = true;
                 }
-                if(grille[j][i] == 2) {
+                if(grille[j][i] == "s") {
                     S = true;
                 }
-                if(grille[j][i] == 3) {
+                if(grille[j][i] == "t") {
                     T = true;
                 }
             }
