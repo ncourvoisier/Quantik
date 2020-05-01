@@ -340,19 +340,22 @@ prioriteListe(Grid, Liste):-
 % C : the column to check
 % P : the pawn to check
 verifAll(Grid,L,C,P) :-
+    write(L),
+    write(C),
+    writeln(P),
     Stop = 0,
     (verifLigne(Grid,L,P) ->
-        Stop = 1
+        write("faux ligne"),Stop = 1
     ;
         write("")
     ),
     (verifColonne(Grid,C,P) ->
-        Stop = 1
+        write("faux colonne"),Stop = 1
     ;
         write("")
     ),
     (verifCarre(Grid,P,L,C) ->
-        Stop = 1
+        write("faux carre"),Stop = 1
     ;
         write("")
     ),
@@ -385,14 +388,31 @@ jouerPosition(_,[],_,_,_,_) :-
 jouerPosition(Grid,[T|Res], PionRestant, L,C,P) :-
     nth0(0,T,L1),
     nth0(1,T,C1),
-    pionRandom(PionRestant,P1),
+    (testTousLesPions(Grid,PionRestant,L1,C1,L,C,P) ->
+        true
+    ;
+        jouerPosition(Grid,Res,PionRestant,L,C,P)
+    ),!.
+
+% This functions checks all pawn avialable in PionRestant in coordinate L and C
+%
+% Grid : the Quantik grid
+% [P1|PionRestant] : the list of pawn avialable
+% L1 : The coordinate line checked
+% C1 : The coordinate column checked
+% L : return the line of the move
+% C : return the column of the mov
+% P : return the pawn of the mov
+testTousLesPions(_,[],_,_,_,_,_) :-
+    !.
+testTousLesPions(Grid,[P1|PionRestant],L1,C1,L,C,P) :-
     (verifAll(Grid,L1,C1,P1) ->
         L = L1,
         C = C1,
         P = P1
         ,true
     ;
-        jouerPosition(Grid,Res,PionRestant,L,C,P)
+        testTousLesPions(Grid,PionRestant,L1,C1,L,C,P)
     ),!.
 
 % This function realizes the next move for the game
@@ -404,11 +424,8 @@ jouerPosition(Grid,[T|Res], PionRestant, L,C,P) :-
 % P : return the pawn of the mov
 jouerCoupHeuristique(Grid, PionRestant, L,C,P) :-
     prioriteListe(Grid, Res),
+    write(Res),
     jouerPosition(Grid,Res,PionRestant,L,C,P).
-
-
-
-
 
 
 % Les tests unitaires :
