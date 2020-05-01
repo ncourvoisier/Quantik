@@ -212,6 +212,90 @@ jouerCoup(Grid,Ligne,Colonne,Pion,ListePion,NvListePion) :-
     !.
 
 
+%%%%%%%%%%%%%%%%%%%% Heuristique %%%%%%%%%%%%%%%%%%%%
+
+poidsLigne([], 0):-
+    !.
+poidsLigne([L0|Ligne], Poids):-
+    L0 \= 0,
+    poidsLigne(Ligne, P),
+    Poids is P + 1,!.
+poidsLigne([_|Ligne], Poids):-
+    poidsLigne(Ligne, Poids).
+poidsLigne(Grid, LigneNb, Poids):-
+    nth0(LigneNb,Grid,Ligne),
+    poidsLigne(Ligne, Poids).
+
+poidsColonne([], _, 0):-
+    !.
+poidsColonne([Ligne|Grid], ColonneNb, Poids):-
+    nth0(ColonneNb, Ligne, Val),
+    Val \= 0,
+    poidsColonne(Grid, ColonneNb, P),
+    Poids is P + 1,!.
+poidsColonne([_|Grid], ColonneNb, Poids):-
+    poidsColonne(Grid, ColonneNb, Poids),!.
+
+% /!\ fonction peu optimisée /!\
+differentZero(0, 0):-!.
+differentZero(_,1).
+comportePion(_, _, _, 0).
+poidsCarree(Grid, ColonneNb, LigneNb, Poids):-
+    mod2Inf(ColonneNb, X),
+    mod2Inf(LigneNb, Y),
+    retournePionDansCase(Grid, X, Y, V1),
+    retournePionDansCase(Grid, X1, Y, V2),
+    X1 is X + 1,
+    retournePionDansCase(Grid, X, Y1, V3),
+    Y1 is Y + 1,
+    retournePionDansCase(Grid, X1, Y1, V4),
+    differentZero(V1,P1),
+    differentZero(V2,P2),
+    differentZero(V3,P3),
+    differentZero(V4,P4),
+    Poids is P1 + P2 + P3 + P4,!.
+
+indexCarreeE(0, 0, 0).
+indexCarreeE(0, 2, 1).
+indexCarreeE(2, 0, 2).
+indexCarreeE(2, 2, 3).
+indexCarree(L,C,Ind):-
+    mod2Inf(L,LCar),
+    mod2Inf(C,CCar),
+    indexCarreeE(LCar,CCar,Ind).
+
+poidsMappingApplyLigne([], _, _, _):-!.
+poidsMappingApplyLigne([Poids|Ligne], [PoidsL,PoidsCo,PoidsCa], CurrL, CurrC):-
+    nth0(CurrL, PoidsL, X0),
+    nth0(CurrC, PoidsCo, X1),
+    indexCarree(CurrC, CurrL, IndC),
+    nth0(IndC, PoidsCa, X2),
+    max_list([X0,X1,X2], Poids),
+    NextCurrC is CurrC + 1,
+    poidsMappingApplyLigne(Ligne, [PoidsL,PoidsCo,PoidsCa], CurrL, NextCurrC).
+
+poidsMappingApply([], _, _, _):-!.
+poidsMappingApply([Ligne|PoidsMap], Poids, CurrL, CurrC):-
+    poidsMappingApplyLigne(Ligne, Poids, CurrL, CurrC),
+    NextCurrL is CurrL + 1,
+    poidsMappingApply(PoidsMap, Poids, NextCurrL, CurrC).
+
+poidsMapping(Grid, PoidsMap):-
+    poidsLigne(Grid, 0, L0),
+    poidsLigne(Grid, 1, L1),
+    poidsLigne(Grid, 2, L2),
+    poidsLigne(Grid, 3, L3),
+    poidsColonne(Grid, 0, Co0),
+    poidsColonne(Grid, 1, Co1),
+    poidsColonne(Grid, 2, Co2),
+    poidsColonne(Grid, 3, Co3),
+    poidsCarree(Grid, 0, 0, Ca0),
+    poidsCarree(Grid, 2, 0, Ca1),
+    poidsCarree(Grid, 0, 2, Ca2),
+    poidsCarree(Grid, 2, 2, Ca3),
+    Poids = [[L0,L1,L2,L3],[Co0,Co1,Co2,Co3],[Ca0,Ca1,Ca2,Ca3]],
+    PoidsMap = [[_,_,_,_],[_,_,_,_],[_,_,_,_],[_,_,_,_]],
+    poidsMappingApply(PoidsMap, Poids, 0, 0),!.
 
 
 % Les tests unitaires :
@@ -297,5 +381,76 @@ test('verifCarre1-1', [true]) :-
         jouerCoup([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], L, C, P, [pn],_).
     test('jouerCoup12', [true(length(NvPion,0))]) :-
         jouerCoup([[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,cn],[cn,cn,cn,0]], _, _, _, [pn],NvPion).
+
+    test('poidsLigne-0', [true]):-
+        poidsLigne([[0,0,2,0],[3,1,0,0],[0,0,0,0],[4,0,1,2]], 0, 1).
+    test('poidsLigne-1', [true]):-
+        poidsLigne([[0,0,2,0],[3,1,0,0],[0,0,0,0],[4,0,1,2]], 1, 2).
+    test('poidsLigne-2', [true]):-
+        poidsLigne([[0,0,2,0],[3,1,0,0],[0,0,0,0],[4,0,1,2]], 2, 0).
+    test('poidsLigne-3', [true]):-
+        poidsLigne([[0,0,2,0],[3,1,0,0],[0,0,0,0],[4,0,1,2]], 3, 3).
+    test('poidsLigne-f', [fail]):-
+        poidsLigne([[0,0,0,0],[3,1,0,0],[0,0,0,0],[4,0,1,2]], 0, 1).
+
+    test('poidsColonne-0', [true]):-
+        poidsColonne([[0,0,2,0],[3,0,3,2],[0,0,0,1],[0,0,0,2]], 0, 1).
+    test('poidsColonne-1', [true]):-
+        poidsColonne([[0,0,2,0],[3,0,3,2],[0,0,0,1],[0,0,0,2]], 1, 0).
+    test('poidsColonne-2', [true]):-
+        poidsColonne([[0,0,2,0],[3,0,3,2],[0,0,0,1],[0,0,0,2]], 2, 2).
+    test('poidsColonne-3', [true]):-
+        poidsColonne([[0,0,2,0],[3,0,3,2],[0,0,0,1],[0,0,0,2]], 3, 3).
+    test('poidsColonne-f', [fail]):-
+        poidsColonne([[0,0,2,0],[3,0,3,2],[0,0,0,1],[0,0,0,0]], 3, 3).
+
+    test('poidsCarree-0', [true]):-
+        poidsCarree([[0,0,2,0],[0,0,3,2],[1,0,0,1],[0,0,0,2]], 0, 0, 0).
+    test('poidsCarree-1', [true]):-
+        poidsCarree([[0,0,2,0],[0,0,3,2],[1,0,0,1],[0,0,0,2]], 0, 2, 3).
+    test('poidsCarree-2', [true]):-
+        poidsCarree([[0,0,2,0],[0,0,3,2],[1,0,0,1],[0,0,0,2]], 2, 0, 1).
+    test('poidsCarree-3', [true]):-
+        poidsCarree([[0,0,2,0],[0,0,3,2],[1,0,0,1],[0,0,0,2]], 2, 2, 2).
+    test('poidsCarree-f', [fail]):-
+        poidsCarree([[0,0,2,0],[0,0,3,2],[1,2,0,1],[0,0,0,2]], 2, 0, 1).
+
+    test('poidsMapping-Empty', [true]):-
+        poidsMapping([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]], [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]).
+    test('poidsMapping-1Corner', [true]):-
+        poidsMapping([[a,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]], [[1,1,1,1],[1,1,0,0],[1,0,0,0],[1,0,0,0]]).
+    test('poidsMapping-2SidedCornersTop', [true]):-
+        poidsMapping([[a,0,0,b],[0,0,0,0],[0,0,0,0],[0,0,0,0]], [[2,2,2,2],[1,1,1,1],[1,0,0,1],[1,0,0,1]]).
+    test('poidsMapping-2SidedCornersBottom', [true]):-
+        poidsMapping([[0,0,0,0],[0,0,0,0],[0,0,0,0],[a,0,0,b]], [[1,0,0,1],[1,0,0,1],[1,1,1,1],[2,2,2,2]]).
+    test('poidsMapping-2SidedCornersLeft', [true]):-
+        poidsMapping([[a,0,0,0],[0,0,0,0],[0,0,0,0],[b,0,0,0]], [[2,1,1,1],[2,1,0,0],[2,1,0,0],[2,1,1,1]]).
+    test('poidsMapping-2SidedCornersRight', [true]):-
+        poidsMapping([[0,0,0,a],[0,0,0,0],[0,0,0,0],[0,0,0,b]], [[1,1,1,2],[0,0,1,2],[0,0,1,2],[1,1,1,2]]).
+    test('poidsMapping-4Corners', [true]):-
+        poidsMapping([[a,0,0,b],[0,0,0,0],[0,0,0,0],[c,0,0,d]], [[2,2,2,2],[2,1,1,2],[2,1,1,2],[2,2,2,2]]).
+    test('poidsMapping-Diagonal', [true]):-
+        poidsMapping([[a,0,0,0],[0,b,0,0],[0,0,c,0],[0,0,0,d]], [[2,2,1,1],[2,2,1,1],[1,1,2,2],[1,1,2,2]]).
+    test('poidsMapping-2TopLeftHorizontal', [true]):-
+        poidsMapping([[a,b,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]], [[2,2,2,2],[2,2,0,0],[1,1,0,0],[1,1,0,0]]).
+    test('poidsMapping-3BottomRightAngle', [true]):-
+        poidsMapping([[0,0,0,0],[0,0,0,0],[0,0,0,a],[0,0,b,c]], [[0,0,1,2],[0,0,1,2],[1,1,3,3],[2,2,3,3]]).
+    test('poidsMapping-6BottomLeftTopRightAngles', [true]):-
+        poidsMapping([[0,0,a,b],[0,0,0,b],[d,0,0,0],[e,f,0,0]], [[2,2,3,3],[2,1,3,3],[3,3,1,2],[3,3,2,2]]).
+    test('poidsMapping-FullBottomExceptBottomRight', [true]):-
+        poidsMapping([[0,0,0,0],[0,0,0,0],[0,0,0,0],[a,b,c,0]], [[1,1,1,0],[1,1,1,0],[2,2,1,1],[3,3,3,3]]).
+    test('poidsMapping-FullLeftExceptTopLeft', [true]):-
+        poidsMapping([[0,0,0,0],[a,0,0,0],[b,0,0,0],[c,0,0,0]], [[3,1,0,0],[3,1,1,1],[3,2,1,1],[3,2,1,1]]).
+    test('poidsMapping-1MiddleTopRight', [true]):-
+        poidsMapping([[0,0,0,0],[0,0,a,0],[0,0,0,0],[0,0,0,0]], [[0,0,1,1],[1,1,1,1],[0,0,1,0],[0,0,1,0]]).
+    test('poidsMapping-1MiddleTopRight1MiddleBottomLeft', [true]):-
+        poidsMapping([[0,0,0,0],[0,0,a,0],[0,b,0,0],[0,0,0,0]], [[0,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,0]]).
+    test('poidsMapping-FullMiddle', [true]):-
+        poidsMapping([[0,0,0,0],[0,a,b,0],[0,c,d,0],[0,0,0,0]], [[1,2,2,1],[2,2,2,2],[2,2,2,2],[1,2,2,1]]).
+    test('poidsMapping-PrettyBadSituation', [true]):-
+        poidsMapping([[0,a,b,0],[c,0,0,d],[e,0,0,f],[0,g,h,0]], [[2,2,2,2],[2,2,2,2],[2,2,2,2],[2,2,2,2]]).
+    test('poidsMapping-5WinningSpots', [true]):-
+        poidsMapping([[a,b,c,0],[0,d,e,f],[g,h,i,0],[j,0,0,k]], [[3,3,3,3],[3,3,3,3],[3,3,3,3],[3,3,3,2]]).
+
 
 :-end_tests(chp0).
