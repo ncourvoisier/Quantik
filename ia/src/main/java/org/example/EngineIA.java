@@ -80,21 +80,44 @@ public class EngineIA {
         System.out.println("The opponent played :");
         g.printGrille();
 
-        System.out.println("Choisir x : (0,1,2,3)");
-        xSend = Integer.parseInt(sc.next());
-        System.out.println("Choisir y : (0,1,2,3)");
-        ySend = Integer.parseInt(sc.next());
-        System.out.println("Choisir p : (0,1,2,3)");
-        pSend = Integer.parseInt(sc.next());
-        System.out.println("Choisir c : (0,1,2,3)");
-        cSend = Integer.parseInt(sc.next());
+//        System.out.println("Choisir x : (0,1,2,3)");
+//        xSend = Integer.parseInt(sc.next());
+//        System.out.println("Choisir y : (0,1,2,3)");
+//        ySend = Integer.parseInt(sc.next());
+//        System.out.println("Choisir p : (0,1,2,3)");
+//        pSend = Integer.parseInt(sc.next());
+//        System.out.println("Choisir c : (0,1,2,3)");
+//        cSend = Integer.parseInt(sc.next());
+
+        xSend = 0;
+        ySend = 0;
+        pSend = 0;
+        cSend = 0;
+
+        Prolog p = new Prolog();
+        try {
+            int[] r = p.jouerCoupHeuristique(g);
+            System.out.println(r[0]);
+            System.out.println(r[1]);
+            System.out.println(r[2]);
+            xSend = r[0];
+            ySend = r[1];
+            pSend = r[2];
+            g.addPawnInGrille(xSend, ySend, intToStringPawn(pSend));
+            if (g.isFinalMove()) {
+                cSend = 1;
+            }
+        } catch (NullPointerException e) {
+            System.out.println("Match nul");
+            cSend = 2;
+        }
 
         DOS.writeInt(xSend); //Envoie de xSend
         DOS.writeInt(ySend); //Envoie de ySend
         DOS.writeInt(pSend); //Envoie de pSend
         DOS.writeInt(cSend); //Envoie de cSend
 
-        g.addPawnInGrille(xSend, ySend, intToStringPawn(pSend));
+       //g.addPawnInGrille(xSend, ySend, intToStringPawn(pSend));
 
         System.out.println("The grid after your move :");
         g.printGrille();
@@ -130,26 +153,50 @@ public class EngineIA {
 
         g.printGrille();
 
-        System.out.println("Choisir xSend : (0,1,2,3)");
-        xSend = Integer.parseInt(sc.next());
-        System.out.println("Choisir y : (0,1,2,3)");
-        ySend = Integer.parseInt(sc.next());
-        System.out.println("Choisir p : (0,1,2,3)");
-        pSend = Integer.parseInt(sc.next());
-        System.out.println("Choisir c : (0,1,2,3)");
-        cSend = Integer.parseInt(sc.next());
+//        System.out.println("Choisir xSend : (0,1,2,3)");
+//        xSend = Integer.parseInt(sc.next());
+//        System.out.println("Choisir y : (0,1,2,3)");
+//        ySend = Integer.parseInt(sc.next());
+//        System.out.println("Choisir p : (0,1,2,3)");
+//        pSend = Integer.parseInt(sc.next());
+//        System.out.println("Choisir c : (0,1,2,3)");
+//        cSend = Integer.parseInt(sc.next());
+
+        xSend = 0;
+        ySend = 0;
+        pSend = 0;
+        cSend = 0;
+
+        Prolog p = new Prolog();
+        try {
+            int[] r = p.jouerCoupHeuristique(g);
+            System.out.println(r[0]);
+            System.out.println(r[1]);
+            System.out.println(r[2]);
+            xSend = r[0];
+            ySend = r[1];
+            pSend = r[2];
+            g.addPawnInGrille(xSend, ySend, intToStringPawn(pSend));
+            System.out.println("isFInal");
+            if (g.isFinalMove()) {
+                System.out.println("FINAAAl");
+                cSend = 1;
+            }
+        } catch (NullPointerException e) {
+            System.out.println("Match nul");
+            cSend = 2;
+        }
+
+        System.out.println("COUP " + cSend);
 
         DOS.writeInt(xSend); //Envoie de xSend
         DOS.writeInt(ySend); //Envoie de y
         DOS.writeInt(pSend); //Envoie de p
         DOS.writeInt(cSend); //Envoie de c
 
-        g.addPawnInGrille(xSend, ySend, intToStringPawn(pSend));
-
         System.out.println("The grid after your move :");
         g.printGrille();
 
-        System.out.println("CONTINUER OU PAS ?");
         continuerPartie = DIS.readInt();
         if (continuerPartie != 0) {
             return -1;
@@ -180,7 +227,6 @@ public class EngineIA {
         String addr = "127.0.0.1";
         Scanner sc = new Scanner(System.in);
         Grille g = new Grille();
-        Prolog p = new Prolog();
         g.printGrille();
 
         try{
@@ -211,6 +257,7 @@ public class EngineIA {
             System.out.println("FIN DE LA PREMIERE PARTIE\nDebut de la revanche :\n");
             end = 0;
             i = 0;
+            g.reInitGrille();
 
             do {
                 i++;
