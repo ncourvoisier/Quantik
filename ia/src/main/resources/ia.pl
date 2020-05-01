@@ -297,10 +297,10 @@ poidsMapping(Grid, PoidsMap):-
     PoidsMap = [[_,_,_,_],[_,_,_,_],[_,_,_,_],[_,_,_,_]],
     poidsMappingApply(PoidsMap, Poids, 0, 0),!.
 
-apparieCase(0, [ListeP0,ListeP1,ListeP2,ListeP3], [[[CurrC,CurrL]|ListeP0],ListeP1,ListeP2,ListeP3], CurrL, CurrC).
-apparieCase(1, [ListeP0,ListeP1,ListeP2,ListeP3], [ListeP0,[[CurrC,CurrL]|ListeP1],ListeP2,ListeP3], CurrL, CurrC).
-apparieCase(2, [ListeP0,ListeP1,ListeP2,ListeP3], [ListeP0,ListeP1,[[CurrC,CurrL]|ListeP2],ListeP3], CurrL, CurrC).
-apparieCase(3, [ListeP0,ListeP1,ListeP2,ListeP3], [ListeP0,ListeP1,ListeP2,[[CurrC,CurrL]|ListeP3]], CurrL, CurrC).
+apparieCase(0, [ListeP0,ListeP1,ListeP2,ListeP3], [[[CurrL,CurrC]|ListeP0],ListeP1,ListeP2,ListeP3], CurrL, CurrC).
+apparieCase(1, [ListeP0,ListeP1,ListeP2,ListeP3], [ListeP0,[[CurrL,CurrC]|ListeP1],ListeP2,ListeP3], CurrL, CurrC).
+apparieCase(2, [ListeP0,ListeP1,ListeP2,ListeP3], [ListeP0,ListeP1,[[CurrL,CurrC]|ListeP2],ListeP3], CurrL, CurrC).
+apparieCase(3, [ListeP0,ListeP1,ListeP2,ListeP3], [ListeP0,ListeP1,ListeP2,[[CurrL,CurrC]|ListeP3]], CurrL, CurrC).
 
 prioriteLigne([], PrioListes, PrioListes, _, _):-!.
 prioriteLigne([Case|Ligne], PrioListes, NvPrioListes, CurrL, CurrC):-
