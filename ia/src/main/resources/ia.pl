@@ -329,10 +329,15 @@ prioriteListe(Grid, Liste):-
     prioriteListe(PoidsMap, [[],[],[],[]], [ListeP0, ListeP1, ListeP2, ListeP3], 0, 0),
     flatten_level1([ListeP3,ListeP1,ListeP0,ListeP2], [], Liste).
 
-
+% This function checks if the move is valid
+%
+% Grid : the Quantik grid
+% L : the line to check
+% C : the column to check
+% P : the pawn to check
 verifAll(Grid,L,C,P) :-
     Stop = 0,
-    (verifColonne(Grid,L,P) ->
+    (verifLigne(Grid,L,P) ->
         Stop = 1
     ;
         write("")
@@ -348,29 +353,51 @@ verifAll(Grid,L,C,P) :-
         write("")
     ),
     (Stop == 1 ->
-        write("true"),true
+        false
     ;
-        write("false"),false
+        true
     ),
     !.
 
-
+% This function selects a pawn in avialable list of pawn
+%
+% PionRestant : the list of avialable pawn
+% P : the pawn selected
 pionRandom(PionRestant,P) :-
     length(PionRestant,S),
     random(0,S,P1),
     nth0(P1,PionRestant,P).
 
-jouerPosition(Grid,[],_,_,_,_) :-
+% This function calcules the next move
+%
+% Grid : the Quantik grid
+% [T|Res] : The list of coordinate available order by priority
+% PionRestant : the list of pawn avialable
+% L : return the line of the move
+% C : return the column of the mov
+% P : return the pawn of the mov
+jouerPosition(_,[],_,_,_,_) :-
     !.
 jouerPosition(Grid,[T|Res], PionRestant, L,C,P) :-
     nth0(0,T,L1),
     nth0(1,T,C1),
-    write(L1),
-    writeln(C1),
-    pionRandom(PionResant,P1),
-    verifAll(Grid,L1,C1,P1),
-    jouerPosition(Grid,Res,PionRestant,L,C,P).
+    pionRandom(PionRestant,P1),
+    (verifAll(Grid,L1,C1,P1) ->
+        L = L1,
+        C = C1,
+        P = P1
+        ,true
+    ;
+        jouerPosition(Grid,Res,PionRestant,L,C,P)
+    ),!.
 
+% This function realizes the next move for the game
+%
+% Grid : the Quantik grid
+% PionRestant : the list of pawn avialable
+% L : return the line of the move
+% C : return the column of the mov
+% P : return the pawn of the mov
 jouerCoupHeuristique(Grid, PionRestant, L,C,P) :-
     prioriteListe(Grid, Res),
     jouerPosition(Grid,Res,PionRestant,L,C,P).
@@ -531,6 +558,17 @@ jouerCoupHeuristique(Grid, PionRestant, L,C,P) :-
         poidsMapping([[0,a,b,0],[c,0,0,d],[e,0,0,f],[0,g,h,0]], [[2,2,2,2],[2,2,2,2],[2,2,2,2],[2,2,2,2]]).
     test('poidsMapping-5WinningSpots', [true]):-
         poidsMapping([[a,b,c,0],[0,d,e,f],[g,h,i,0],[j,0,0,k]], [[3,3,3,3],[3,3,3,3],[3,3,3,3],[3,3,3,2]]).
+
+    test('jouerCoupHeuristique1', [all([L,C] == [[3,3]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,_).
+    test('jouerCoupHeuristique2', [all([L,C] == [[3,3]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,_).
+    test('jouerCoupHeuristique3', [all([L,C] == [[3,3]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,_).
+    test('jouerCoupHeuristique4', [all([L,C] == [[3,3]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,_).
+
+
 
 
 :-end_tests(chp0).
