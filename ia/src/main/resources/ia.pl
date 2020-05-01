@@ -387,15 +387,31 @@ jouerPosition(_,[],_,_,_,_) :-
 jouerPosition(Grid,[T|Res], PionRestant, L,C,P) :-
     nth0(0,T,L1),
     nth0(1,T,C1),
-    pionRandom(PionRestant,P1),
-    write(P1),
+    (testTousLesPions(Grid,PionRestant,L1,C1,L,C,P) ->
+        true
+    ;
+        jouerPosition(Grid,Res,PionRestant,L,C,P)
+    ),!.
+
+% This functions checks all pawn avialable in PionRestant in coordinate L and C
+%
+% Grid : the Quantik grid
+% [P1|PionRestant] : the list of pawn avialable
+% L1 : The coordinate line checked
+% C1 : The coordinate column checked
+% L : return the line of the move
+% C : return the column of the mov
+% P : return the pawn of the mov
+testTousLesPions(_,[],_,_,_,_,_) :-
+    !.
+testTousLesPions(Grid,[P1|PionRestant],L1,C1,L,C,P) :-
     (verifAll(Grid,L1,C1,P1) ->
         L = L1,
         C = C1,
         P = P1
         ,true
     ;
-        jouerPosition(Grid,Res,PionRestant,L,C,P)
+        testTousLesPions(Grid,PionRestant,L1,C1,L,C,P)
     ),!.
 
 % This function realizes the next move for the game
@@ -407,15 +423,8 @@ jouerPosition(Grid,[T|Res], PionRestant, L,C,P) :-
 % P : return the pawn of the mov
 jouerCoupHeuristique(Grid, PionRestant, L,C,P) :-
     prioriteListe(Grid, Res),
+    write(Res),
     jouerPosition(Grid,Res,PionRestant,L,C,P).
-
-
-joueTest(Grid, L1,C1,P1) :-
-    (verifAll(Grid,L1,C1,P1) ->
-        write("true"),true
-    ;
-        write("false"),false
-    ),!.
 
 
 % Les tests unitaires :
@@ -574,12 +583,12 @@ joueTest(Grid, L1,C1,P1) :-
 
     test('jouerCoupHeuristique1', [all([L,C] == [[3,3]])]) :-
         jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,_).
-    test('jouerCoupHeuristique2', [all([L,C] == [[3,3]])]) :-
-        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,_).
+    test('jouerCoupHeuristique2', [all([L,C,P] == [[3,3,t]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[p,c,s,0]],[c,c,p,p,s,s,t,t],L,C,P).
     test('jouerCoupHeuristique3', [all([L,C] == [[3,3]])]) :-
-        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,_).
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
     test('jouerCoupHeuristique4', [all([L,C] == [[3,3]])]) :-
-        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,_).
+        jouerCoupHeuristique([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],[c,c,p,p,s,s,t,t],L,C,P).
 
 
 
