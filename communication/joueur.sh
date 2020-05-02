@@ -9,5 +9,9 @@ make
 
 echo "Launch player with this arguments : $1 $2 $3 \n"
 
-./player $1 $2 $3 B 2567
+./player $1 $2 $3 B 2567 &
+
+echo "Launch ia\n"
+
+java -jar ia.jar
 
