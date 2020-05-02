@@ -214,6 +214,11 @@ jouerCoup(Grid,Ligne,Colonne,Pion,ListePion,NvListePion) :-
 
 %%%%%%%%%%%%%%%%%%%% Heuristique %%%%%%%%%%%%%%%%%%%%
 
+% Returns the number of pawns found on a line
+%
+% Grid : the Quantik game board
+% LigneNb : the number of the line
+% Poids : the returned number of pawns on the line
 poidsLigne([], 0):-
     !.
 poidsLigne([L0|Ligne], Poids):-
@@ -226,6 +231,11 @@ poidsLigne(Grid, LigneNb, Poids):-
     nth0(LigneNb,Grid,Ligne),
     poidsLigne(Ligne, Poids).
 
+% Returns the number of pawns found on a column
+%
+% Grid : the Quantik game board
+% ColonneNb : the number of the column
+% Poids : the returned number of pawns on the column
 poidsColonne([], _, 0):-
     !.
 poidsColonne([Ligne|Grid], ColonneNb, Poids):-
@@ -236,7 +246,12 @@ poidsColonne([Ligne|Grid], ColonneNb, Poids):-
 poidsColonne([_|Grid], ColonneNb, Poids):-
     poidsColonne(Grid, ColonneNb, Poids),!.
 
-% /!\ fonction peu optimisée /!\
+% Returns the number of pawns found in the square the given cell is in
+%
+% Grid : the Quantik game board
+% LigneNb : the number of the line the cell belongs to
+% ColonneNb : the number of the column the cell belongs to
+% Poids : the returned number of pawns in the square
 differentZero(0, 0):-!.
 differentZero(_,1).
 comportePion(_, _, _, 0).
@@ -255,6 +270,11 @@ poidsCarree(Grid, ColonneNb, LigneNb, Poids):-
     differentZero(V4,P4),
     Poids is P1 + P2 + P3 + P4,!.
 
+% Gives a number between 0 and 3 to each square of the game
+%
+% L : The square origin line
+% C : The square origin column
+% Ind : The returned number for the square
 indexCarreeE(0, 0, 0).
 indexCarreeE(0, 2, 1).
 indexCarreeE(2, 0, 2).
@@ -280,6 +300,11 @@ poidsMappingApply([Ligne|PoidsMap], Poids, CurrL, CurrC):-
     NextCurrL is CurrL + 1,
     poidsMappingApply(PoidsMap, Poids, NextCurrL, CurrC).
 
+% Takes a game board and generates a weights map, with a weight associated to each cell
+% of the board. The weight of a cell tells how close we are to complete a line/column/square if we play in it.
+%
+% Grid : the Quantik game board
+% PoidsMap : the returned weights map
 poidsMapping(Grid, PoidsMap):-
     poidsLigne(Grid, 0, L0),
     poidsLigne(Grid, 1, L1),
@@ -328,6 +353,12 @@ flatten_level1(Grid, [Liste|Q], Flat, NvFlat):-
     flatten_level2(Grid, Liste, Flat, NvFlatApr2),
     flatten_level1(Grid, Q, NvFlatApr2, NvFlat),!.
 
+% Takes a board and generates a list of coordinates pairs, those are empty cells
+% in the board given by priority order, the first cell in the list is the one
+% that we have to try to play in first.
+%
+% Grid : the Quantik game board
+% Liste : the returned coordinates pairs list
 prioriteListe(Grid, Liste):-
     poidsMapping(Grid, PoidsMap),
     prioriteListe(PoidsMap, [[],[],[],[]], [ListeP0, ListeP1, ListeP2, ListeP3], 0, 0),
@@ -701,5 +732,7 @@ jouerCoupHeuristique(Grid, PionRestant, L,C,P) :-
 
     test('jouerCoupHeuristiqueTheLastChance', [true]):-
         jouerCoupHeuristique([[c,p,0,0],[0,0,0,t],[p,c,0,0],[0,0,t,s]],[c,c,p,p,s,s,t,t],1,2,_).
+    test('jouerCoupHeuristique1Over0', [all([L,C] == [[1,2]])]) :-
+        jouerCoupHeuristique([[0,0,0,0],[0,c,0,0],[c,0,0,t],[p,0,0,s]],[c,c,p,p,s,s,t,t],L,C,_).
 
 :-end_tests(chp0).
