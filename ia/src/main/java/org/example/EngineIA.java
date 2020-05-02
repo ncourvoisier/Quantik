@@ -225,7 +225,6 @@ public class EngineIA {
 
         int port = 2567;
         String addr = "127.0.0.1";
-        Scanner sc = new Scanner(System.in);
         Grille g = new Grille();
         g.printGrille();
 
