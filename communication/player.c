@@ -399,6 +399,8 @@ int main (int argc, char** argv) {
     TPartieReq gameRequest;					// Request to create a game
     TPartieRep gameResponse;				// Response of the request 'create a game'
 
+		int sockIA  = connectionIA(portIA); // Connexion a l'IA
+
     if(!strcmp(color,"W")) {
         gameRequest.coulPion = BLANC;
     } else if(!strcmp(color,"B")) {
@@ -430,7 +432,6 @@ int main (int argc, char** argv) {
 		gameRequest.coulPion = initializeColor(gameResponse.validCoulPion, gameRequest.coulPion);
 		
     printf("The first game is starded :\n");
-    int sockIA  = connectionIA(portIA); // Connexion a l'IA
     int startIA = -1;
     if (gameRequest.coulPion == NOIR) {
     	startIA = 1;
@@ -497,6 +498,7 @@ int main (int argc, char** argv) {
 		printf("See you !\n");		
 
     shutdown(sock, SHUT_RDWR); close(sock);
+    shutdown(sockIA, SHUT_RDWR); close(sockIA);
     return 0;
 }
 
