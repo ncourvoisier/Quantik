@@ -5,13 +5,22 @@ if [ "$#" -lt 2 ] || [ "$#" -lt 3 ]; then
 	exit 1
 fi
 
+if [ "$#" = 3 ]; then
+	portIA='2567'
+fi
+
+if [ "$#" -gt 3 ]; then
+	portIA=$4
+fi
+
+
 make
 
 echo "Launch player with this arguments : $1 $2 $3 \n"
 
-./player $1 $2 $3 B 2567 &
+./player $1 $2 $3 B $portIA &
 
-echo "Launch ia\n"
+echo "Launch ia : java -jar ia.jar 127.0.0.1 $portIA\n"
 
-java -jar ia.jar
+java -jar ia.jar 127.0.0.1 $portIA
 

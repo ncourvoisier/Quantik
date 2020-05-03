@@ -46,7 +46,6 @@ public class EngineIA {
      * @throws Exception the exception to catch error with recv and send function
      */
     public static int playSecond(Grille g, int i, DataInputStream DIS, DataOutputStream DOS) throws Exception {
-        Scanner sc = new Scanner(System.in);
         int xSend;
         int ySend;
         int pSend;
@@ -80,15 +79,6 @@ public class EngineIA {
         System.out.println("The opponent played :");
         g.printGrille();
 
-//        System.out.println("Choisir x : (0,1,2,3)");
-//        xSend = Integer.parseInt(sc.next());
-//        System.out.println("Choisir y : (0,1,2,3)");
-//        ySend = Integer.parseInt(sc.next());
-//        System.out.println("Choisir p : (0,1,2,3)");
-//        pSend = Integer.parseInt(sc.next());
-//        System.out.println("Choisir c : (0,1,2,3)");
-//        cSend = Integer.parseInt(sc.next());
-
         xSend = 0;
         ySend = 0;
         pSend = 0;
@@ -116,8 +106,6 @@ public class EngineIA {
         DOS.writeInt(ySend); //Envoie de ySend
         DOS.writeInt(pSend); //Envoie de pSend
         DOS.writeInt(cSend); //Envoie de cSend
-
-       //g.addPawnInGrille(xSend, ySend, intToStringPawn(pSend));
 
         System.out.println("The grid after your move :");
         g.printGrille();
@@ -153,15 +141,6 @@ public class EngineIA {
 
         g.printGrille();
 
-//        System.out.println("Choisir xSend : (0,1,2,3)");
-//        xSend = Integer.parseInt(sc.next());
-//        System.out.println("Choisir y : (0,1,2,3)");
-//        ySend = Integer.parseInt(sc.next());
-//        System.out.println("Choisir p : (0,1,2,3)");
-//        pSend = Integer.parseInt(sc.next());
-//        System.out.println("Choisir c : (0,1,2,3)");
-//        cSend = Integer.parseInt(sc.next());
-
         xSend = 0;
         ySend = 0;
         pSend = 0;
@@ -177,9 +156,7 @@ public class EngineIA {
             ySend = r[1];
             pSend = r[2];
             g.addPawnInGrille(xSend, ySend, intToStringPawn(pSend));
-            System.out.println("isFInal");
             if (g.isFinalMove()) {
-                System.out.println("FINAAAl");
                 cSend = 1;
             }
         } catch (NullPointerException e) {
@@ -223,8 +200,14 @@ public class EngineIA {
      */
     public static void main (String[] args) {
 
-        int port = 2567;
-        String addr = "127.0.0.1";
+        if (args.length != 2) {
+            System.out.println("Usage : java -jar ia.jar addr port");
+        }
+
+        //int port = 2567;
+        int port = Integer.parseInt(args[1]);
+        //String addr = "127.0.0.1";
+        String addr = args[0];
         Grille g = new Grille();
         g.printGrille();
 

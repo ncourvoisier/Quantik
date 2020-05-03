@@ -25,7 +25,8 @@ public class Prolog {
      * @return the query to make request to the prolog file
      */
     public Query consult() {
-        String file = ClassLoader.getSystemResource("ia.pl").getPath();
+        String file = System.getProperty("user.dir") + "/ia.pl";
+        System.out.println(file);
         Query q1 = new Query("consult", new Term[] {new Atom(file)});
         System.out.println("Consult prolog file : " + (q1.hasSolution() ? "succeeded" : "failed")); //Si le fichier a pu etre lu
         return q1;
@@ -105,10 +106,6 @@ public class Prolog {
 
         java.util.Map<String,Term> solution;
         solution = q1.oneSolution();
-        //System.out.println( "L = " + solution.get("L"));
-        //System.out.println( "C = " + solution.get("C"));
-        //System.out.println( "P = " + solution.get("P"));
-
         g.removePionJouer(solution.get("P").toString());
 
         int[] res = new int[3];
@@ -131,10 +128,6 @@ public class Prolog {
 
         java.util.Map<String,Term> solution;
         solution = q1.oneSolution();
-        //System.out.println( "L = " + solution.get("L"));
-        //System.out.println( "C = " + solution.get("C"));
-        //System.out.println( "P = " + solution.get("P"));
-
         g.removePionJouer(solution.get("P").toString());
 
         int[] res = new int[3];
@@ -142,17 +135,5 @@ public class Prolog {
         res[1] = solution.get("C").intValue();
         res[2] = pionToInt(solution.get("P").toString());
         return res;
-    }
-
-
-    public static void main( String[] args ) {
-        Prolog p = new Prolog();
-        Grille g = new Grille();
-
-        int[] res = p.jouerCoupHeuristique(g);
-
-        System.out.println(res[0]);
-        System.out.println(res[1]);
-        System.out.println(res[2]);
     }
 }
