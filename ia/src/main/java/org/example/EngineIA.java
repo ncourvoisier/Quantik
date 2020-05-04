@@ -98,7 +98,6 @@ public class EngineIA {
                 cSend = 1;
             }
         } catch (NullPointerException e) {
-            System.out.println("Match nul");
             cSend = 2;
         }
 
@@ -160,7 +159,6 @@ public class EngineIA {
                 cSend = 1;
             }
         } catch (NullPointerException e) {
-            System.out.println("Match nul");
             cSend = 2;
         }
 
@@ -204,15 +202,15 @@ public class EngineIA {
             System.out.println("Usage : java -jar ia.jar addr port");
         }
 
-        //int port = 2567;
         int port = Integer.parseInt(args[1]);
-        //String addr = "127.0.0.1";
         String addr = args[0];
         Grille g = new Grille();
         g.printGrille();
 
+        Socket sock = null;
+
         try{
-            Socket sock = new Socket(addr,port);
+            sock = new Socket(addr,port);
             DataInputStream DIS = new DataInputStream(sock.getInputStream());
             DataOutputStream DOS = new DataOutputStream(sock.getOutputStream());
 
@@ -262,6 +260,14 @@ public class EngineIA {
             sock.close();
         } catch (Exception e) {
             e.printStackTrace();
+        }finally{
+            try {
+                if (sock != null) {
+                    sock.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }

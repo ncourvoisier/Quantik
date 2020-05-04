@@ -118,11 +118,11 @@ int playFirst(int sock, int sockIA, int i, int err, TPartieReq gameRequest, TPar
 	
 	err = 0;
 	err = send(sock, &coupReq, sizeof(TCoupReq),0);
-	printError(err, "(player) send error with the game request of one move\n", sock);
+	printError(err, "(player) send error with the game request of one move\n", sock, sockIA);
 	
  	err = 0;
 	err = recv(sock, &coupResponse, sizeof(TCoupRep),0);
-	printError(err, "(player) recv error with the game response of one move\n", sock);
+	printError(err, "(player) recv error with the game response of one move\n", sock, sockIA);
 	
 	end = responseError(coupResponse.err);
 	if (end != 0) {
@@ -155,7 +155,7 @@ int playFirst(int sock, int sockIA, int i, int err, TPartieReq gameRequest, TPar
 	err = 0;
 	printf("Waiting the player to play...\n");
 	err = recv(sock, &coupResponseAdversaire, sizeof(TCoupRep),0);
-	printError(err, "(player) recv error with the opponent move response\n", sock);
+	printError(err, "(player) recv error with the opponent move response\n", sock, sockIA);
 	
 	end = responseAdversaireError(coupResponseAdversaire.err);
 	if (end != 0) {
@@ -190,7 +190,7 @@ int playFirst(int sock, int sockIA, int i, int err, TPartieReq gameRequest, TPar
 	}
 	
 	err = recv(sock, &coupRepAdversaire, sizeof(TCoupReq),0);
-	printError(err, "(player) recv error with the opponent move\n", sock);
+	printError(err, "(player) recv error with the opponent move\n", sock, sockIA);
 
 	int xa = ligneToInt(coupRepAdversaire.posPion.l);
 	int ya = colonneToInt(coupRepAdversaire.posPion.c);
@@ -243,7 +243,7 @@ int playSecond(int sock, int sockIA, int i,  int err, TPartieReq gameRequest, TP
 	
 	err = 0;
 	err = recv(sock, &coupResponseAdversaire, sizeof(TCoupRep),0);
-	printError(err, "(player) recv error with the opponent move response\n", sock);
+	printError(err, "(player) recv error with the opponent move response\n", sock, sockIA);
 	
 	end = responseAdversaireError(coupResponseAdversaire.err);
 	if (end != 0) {
@@ -284,7 +284,7 @@ int playSecond(int sock, int sockIA, int i,  int err, TPartieReq gameRequest, TP
 	
 	err = 0;
 	err = recv(sock, &coupRepAdversaire, sizeof(TCoupReq),0);
-	printError(err, "(player) recv error with the opponent move\n", sock);
+	printError(err, "(player) recv error with the opponent move\n", sock, sockIA);
 	
 	int xa = ligneToInt(coupRepAdversaire.posPion.l);
 	int ya = colonneToInt(coupRepAdversaire.posPion.c);
@@ -337,12 +337,12 @@ int playSecond(int sock, int sockIA, int i,  int err, TPartieReq gameRequest, TP
 	
 	err = 0;
 	err = send(sock, &coupReq, sizeof(TCoupReq),0);
-	printError(err, "(player) send error with the game request of one move\n", sock);
+	printError(err, "(player) send error with the game request of one move\n", sock, sockIA);
 	
  	printf("Waiting the player to play...\n");
 	err = 0;
 	err = recv(sock, &coupResponse, sizeof(TCoupRep),0);
-	printError(err, "(player) recv error with the game response of one move\n", sock);
+	printError(err, "(player) recv error with the game response of one move\n", sock, sockIA);
 	
 	end = responseError(coupResponse.err);
 	if (end != 0) {
@@ -412,7 +412,7 @@ int main (int argc, char** argv) {
     
     
     sock = socketClient(ipServeur, port);
-    printError(sock, "(player) error during the creation of the socketClient\n", sock);
+    printError(sock, "(player) error during the creation of the socketClient\n", sock, sockIA);
     
     gameRequest.idReq = PARTIE;
     strcpy(gameRequest.nomJoueur, playerName);
@@ -422,11 +422,11 @@ int main (int argc, char** argv) {
 
 
     err = send(sock, &gameRequest, sizeof(TPartieReq),0);
-    printError(err, "(player) send error with the initialize game request\n", sock);
+    printError(err, "(player) send error with the initialize game request\n", sock, sockIA);
 
     printf("Waiting for player...\n");
     err = recv(sock, &gameResponse, sizeof(TPartieRep),0);
-    printError(err, "(player) recv error with the initialize game response\n", sock);
+    printError(err, "(player) recv error with the initialize game response\n", sock, sockIA);
 
 		initializeGameResponse(gameResponse.err, gameResponse.nomAdvers);
 		gameRequest.coulPion = initializeColor(gameResponse.validCoulPion, gameRequest.coulPion);

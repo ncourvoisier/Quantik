@@ -2,10 +2,11 @@
 
 #define TAIL_BUF 20
 
-void printError(int err, char* msg, int sock) {
+void printError(int err, char* msg, int sock, int sockIA) {
 	if (err <= 0) {
     perror(msg);
     shutdown(sock, SHUT_RDWR); close(sock);
+    shutdown(sockIA, SHUT_RDWR); close(sockIA);
     exit(EXIT_FAILURE);
 	}
 }
@@ -33,6 +34,9 @@ int socketServeur(ushort nPort) {
     perror("(serveurTCP) erreur on socket");
     return -2;
   }
+  
+  int iOption = 1;
+  setsockopt(sockConx, SOL_SOCKET, SO_REUSEADDR, (char*)&iOption, sizeof(iOption));
   
   addServ.sin_family = AF_INET;
   addServ.sin_port = htons(port); // conversion en format réseau (big endian)

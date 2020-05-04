@@ -49,6 +49,8 @@ public class Grille {
      */
     public void reInitGrille(){
         intitalizeGrille(this.grille);
+        this.pionRestant = new String[8];
+        initializePionRestant(this.pionRestant);
     }
 
     /**
@@ -296,9 +298,6 @@ public class Grille {
                     T = true;
                 }
             }
-
-            //System.out.println(C + "  " + P + " " + S + " "+ T);
-            //System.out.println("\n\n");
 
             if (gagne == 4 && C && P && S && T ) {
                 return true;

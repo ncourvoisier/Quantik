@@ -18,8 +18,9 @@
  * @param int err determines if there is an error
  * @param char* msg the message to print
  * @param int sock the socket to close, if there is a problem
+ * @param int sockIA the IA socket to close, if there is a problem
  */
-void printError(int err, char* msg, int sock);
+void printError(int err, char* msg, int sock, int sockIA);
 
 /**
  * Create a socket server with a port

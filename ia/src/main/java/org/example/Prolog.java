@@ -128,12 +128,20 @@ public class Prolog {
 
         java.util.Map<String,Term> solution;
         solution = q1.oneSolution();
-        g.removePionJouer(solution.get("P").toString());
+
+        System.out.println(str);
 
         int[] res = new int[3];
-        res[0] = solution.get("L").intValue();
-        res[1] = solution.get("C").intValue();
-        res[2] = pionToInt(solution.get("P").toString());
+        try {
+            res[0] = solution.get("L").intValue();
+            res[1] = solution.get("C").intValue();
+            res[2] = pionToInt(solution.get("P").toString());
+            g.removePionJouer(solution.get("P").toString());
+        } catch (Exception p) {
+            res[0] = 0;
+            res[1] = 0;
+            res[2] = 0;
+        }
         return res;
     }
 }

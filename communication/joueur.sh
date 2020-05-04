@@ -20,6 +20,8 @@ echo "Launch player with this arguments : $1 $2 $3 \n"
 
 ./player $1 $2 $3 B $portIA &
 
+sleep 1
+
 echo "Launch ia : java -jar ia.jar 127.0.0.1 $portIA\n"
 
 java -jar ia.jar 127.0.0.1 $portIA
