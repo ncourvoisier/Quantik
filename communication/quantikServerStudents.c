@@ -1,3 +1,13 @@
+/**
+ * @file quantikServerStudents.c
+ * @author Augustin Bordy
+ * @author Nicolas Courvoisier
+ * @date 9 May 2020
+ * @brief Quantik game server source code, developped for a scholar project
+ * @see https://www.gigamic.com/jeu/quantik
+ */
+
+
 #include "fonctionTCP.h"
 #include "validation.h"
 #include "protocolQuantik.h"
@@ -12,9 +22,10 @@
 
 #define TIME_MAX 5000
 
-/*
-    Structures definition
-*/
+
+/**
+ * Structures definition
+ */
 typedef struct PlayerData {
     int id;
     int number; // playing order of the player in the current round
@@ -28,18 +39,18 @@ typedef struct PlayerData {
 } PlayerData;
 
 
-/*
-    Global parameters
-*/
+/**
+ * Global parameters
+ */
 int valid = 1;
 int timeout = 1;
 int port = -1;
 int showBoard = 0;
 
 
-/*
-    Game datas
-*/
+/**
+ * Game datas
+ */
 int socketServer;
 PlayerData players[2];
 PlayerData *currentPlayer; //player currently playing
@@ -49,30 +60,33 @@ int roundNumber = 1; // 1 for the first round, 2 for the second
 int playerTimedOut = 0;
 
 
-/*
-    Timer datas
-*/
+/**
+ * Timer datas
+ */
 pid_t clockPid;
 int timerInterrupted = 0;
 
 
-/*
-    Logs mechanic
-*/
+/**
+ * Logs mechanic
+ */
 int debug = 0;
 char logMessage[200];
 typedef enum { INFO, SEVERE, DEBUG } LogType;
 
 
-/*
-    Called in the timer process.
-    Interrupts the timer.
-*/
+/**
+ * @brief Called by the timer process. \n
+ * Interrupts the timer.
+ */
 void timerInterruptSignalHandler() {
     timerInterrupted = 1;
 }
 
 
+/**
+ * @brief Forks the main process to create a timer routine
+ */
 void startClockTimer() {
     struct timespec nano1, nano2;
     nano1.tv_sec = 0;
@@ -95,17 +109,27 @@ void startClockTimer() {
 }
 
 
+/**
+ * @brief Reset the clock routine
+ */
 void resetClockTimer() {
     kill(clockPid, SIGUSR2);
 }
 
 
+/**
+ * @brief Stops the clock timer
+ */
 void stopClockTimer() {
     kill(clockPid, SIGKILL);
     wait(NULL);
 }
 
 
+/**
+ * @brief A simple logging fonction
+ * @param [in] type The type of log information to print
+ */
 void printLog(LogType type) {
     char logTypeStr[7];
     if (type == DEBUG && debug) {
@@ -140,11 +164,23 @@ void printLog(LogType type) {
 }
 
 
+/**
+ * @brief Prints the executable file usage
+ * @param execName [in] the executable file name
+ */
 void printUsage(char* execName) {
     printf("Usage: %s [--noValid|--noTimeout|--debug|--showBoard] no_port\n", execName);
 }
 
 
+/**
+ * @brief Parses the given parameters
+ * @param [in] argc The number of arguments
+ * @param [in] argv The arguments array
+ * @return The parameters validity code \n
+ * 0 -> valid parameters \n
+ * 1 -> invalid parameters
+ */
 int parsingParameters(int argc, char** argv) {
     if (argc < 2) {
         printf("Error: too few parameters\n");
@@ -175,6 +211,9 @@ int parsingParameters(int argc, char** argv) {
 }
 
 
+/**
+ * @brief Initializes the players array
+ */
 void initPlayers() {
     for (int i = 0; i < 2; i++) {
         players[i].socket = -1;
@@ -185,6 +224,10 @@ void initPlayers() {
 }
 
 
+/**
+ * @brief Close the communication socket for a given player
+ * @param [in] player The player to close the socket of
+ */
 void closeConnection(PlayerData *player) {
     if (player->socket == -1) {
         return;
@@ -195,11 +238,14 @@ void closeConnection(PlayerData *player) {
 }
 
 
-/*
-    Send a game initialization response to the player.
-    -> use ERR_OK value for code when both players are ready.
-    -> use ERR_PARTIE or ERR_TYP to warn the player that his attempt is invalid.
-*/
+/**
+ * @brief Send a game initialization response to the player
+ * @param [in] player The player to send a response to
+ * @param [in] code The nature of the  response
+ * @return the response sending state \n
+ * 0 -> The response was sent successfully \n
+ * 1 -> An error occured
+ */
 int sendGameResponse(PlayerData *player, TCodeRep code) {
     TPartieRep gameResponse;
     gameResponse.err = code;
@@ -210,12 +256,17 @@ int sendGameResponse(PlayerData *player, TCodeRep code) {
     int err = send(player->socket, &gameResponse, sizeof(TPartieRep), 0);
     if (err <= 0) {
         return 1;
-        // TODO
     }
     return 0;
 }
 
 
+/**
+ * @brief Send playing response to all players
+ * @param [in] code The response code
+ * @param [in] val The move value
+ * @param [in] prop The move property
+ */
 void sendPlayingResponse(TCodeRep code, TValCoup val, TPropCoup prop) {
     sprintf(logMessage, "Sending TCoupRep to players (Err: %i, Val: %i, Prop: %i)", code, val, prop); printLog(DEBUG);
     TCoupRep playingResponse;
@@ -231,6 +282,13 @@ void sendPlayingResponse(TCodeRep code, TValCoup val, TPropCoup prop) {
 }
 
 
+/**
+ * @brief Starts a game round
+ * @param [in] number The number of the round to start
+ * @details The player who will start playing is decided here, depending \n
+ * on his color and the round number. During the first round the white \n
+ * starts then it's alternating.
+ */
 void launchRound(int number) {
     initialiserPartie();
     roundNumber = number;
@@ -256,18 +314,30 @@ void launchRound(int number) {
 }
 
 
-void launchGame() {
+/**
+ * @brief Starts the game
+ * @return 0 if the game was launched successfully \n
+ * 1 if a request couldn't be sent
+ */
+int launchGame() {
     for (int i = 0; i < 2; i++) {
-        sendGameResponse(&players[i], ERR_OK); // TODO test ret
+        if (sendGameResponse(&players[i], ERR_OK)) {
+            return 1;
+        }
     }
     if (timeout) {
         startClockTimer();
     }
     gameStarted = 1;
     launchRound(1);
+    return 0;
 }
 
 
+/**
+ * @brief Ends the game
+ * @details Closes the timer and stops the players connections.
+ */
 void endGame() {
     sprintf(logMessage, "End of the game"); printLog(INFO);
     if (timeout) {
@@ -280,12 +350,19 @@ void endGame() {
 }
 
 
+/**
+ * @brief Handles the SIGINT brute stopping signal (Ctrl+C) to close the server properly
+ */
 void intHandler() {
     sprintf(logMessage, "Server was force stopped, shutting down the connections..."); printLog(INFO);
     endGame();
 }
 
 
+/**
+ * @brief Ends a game round
+ * @param [in] winner The winner of the round, can be null
+ */
 void endRound(PlayerData *winner) {
     sprintf(logMessage, "------------ End of the round %i ------------", roundNumber); printLog(INFO);
     if (winner == NULL) {
@@ -305,6 +382,16 @@ void endRound(PlayerData *winner) {
 }
 
 
+/**
+ * @brief Ends a player action
+ * @param [in] player The players whose action is ended
+ * @param [in] code The response code to send
+ * @param [in] The value of the move that was players
+ * @param [in] moveProperty The property of the move that was played
+ * @param [in] playingRequest The playing request that was just sent
+ * @details This function calls {@link sendPlayingResponse}, changes the current playing user and sends the \n
+ * played request if the game is continuing, calls {@link endRound} if the round has to stop.
+ */
 void endAction(PlayerData *player, TCodeRep code, TValCoup value, TPropCoup moveProperty, TCoupReq *playingRequest) {
     if (timeout) {
         resetClockTimer();
@@ -337,6 +424,11 @@ void endAction(PlayerData *player, TCodeRep code, TValCoup value, TPropCoup move
 }
 
 
+/**
+ * @brief Disconnects a player
+ * @param [in] player The player that is getting disconnected
+ * @details The victory is given to the opponent and the player connection is closed.
+ */
 void playerDisconnected(PlayerData *player) {
     if (gameStarted) {
         sprintf(logMessage, "Player '%s' disconnected", player->name); printLog(INFO);
@@ -350,6 +442,14 @@ void playerDisconnected(PlayerData *player) {
 }
 
 
+/**
+ * @brief Handles a player connection on the connection socket
+ * @param [in] socketServer The server connection socket
+ * @param  [in,out] players The array of players where to add the new player to
+ * @return 0 if the player connection was accepted \n
+ * -1 if there's already 2 players \n
+ * -2 if an error occured
+ */
 int handlePlayerConnection(int socketServer, PlayerData players[]) {
     int newPlayer;
     if (players[0].socket == -1) {
@@ -384,12 +484,12 @@ int handlePlayerConnection(int socketServer, PlayerData players[]) {
 }
 
 
-/*
-    Called for game initialization requests.
-    Error code:
-    1 -> invalid request type
-    2 -> name already used
-*/
+/**
+ * @brief Handles game initialization requests
+ * @param [in,out] player The player who sent a {@link TPartieReq} request
+ * @return 0 if the player was successfully initialized \n
+ * 1 if an error occured
+ */
 int handleGameRequest(PlayerData *player) {
     sprintf(logMessage, "game request by player %i", player->id); printLog(DEBUG);
 
@@ -399,11 +499,6 @@ int handleGameRequest(PlayerData *player) {
     if (err <= 0) {
         sprintf(logMessage, "Error occured while receiving player request"); printLog(SEVERE);
         return 1;
-    }
-
-    if (strcmp(gameRequest.nomJoueur, player->opponent->name) == 0) {
-        sprintf(logMessage, "Name '%s' already exists", gameRequest.nomJoueur); printLog(DEBUG);
-        return 2;
     }
 
     strcpy(player->name, gameRequest.nomJoueur);
@@ -427,23 +522,26 @@ int handleGameRequest(PlayerData *player) {
     sprintf(logMessage, "Player '%s' with id %i is ready using color %i", player->name, player->id, player->color); printLog(INFO);
 
     if (player->opponent->ready) {
-        launchGame();
+        return launchGame();
     }
 
     return 0;
 }
 
 
-/*
-    Called for playing requests.
-    Error code:
-    1 -> invalid request type
-    2 -> invalid move
-*/
+/**
+ * @brief Handles playing requests
+ * @param [in] player Playing request sender
+ * @return 0 if the request was successfully threated \n
+ * 1 if an error occured \n
+ * 2 if if the played move was rejected \n
+ * 3 if it's not the player's turn to play
+ * @details The function receives the playing request, validates the move if the validation \n
+ * is enabled and ends the player action.
+ */
 int handlePlayingRequest(PlayerData *player) {
-    if (player != currentPlayer) { // Not this player turn to play TODO: might loop a lot!
-        //sprintf(logMessage, "Player '%s' attempted to play out of his turn", player->name); printLog(DEBUG);
-        return 0;
+    if (player != currentPlayer) {
+        return 3;
     }
 
     TCoupReq playingRequest;
@@ -498,9 +596,12 @@ int handlePlayingRequest(PlayerData *player) {
 }
 
 
-/*
-    Called for every player action on his socket.
-*/
+/**
+ * @brief Handles every player action on his socket
+ * @param [in,out] player The player who sent a request
+ * @return 0 if the request was successfully threated \n
+ * 1 if an error occured
+ */
 int handlePlayerAction(PlayerData *player) {
     sprintf(logMessage, "Player %i performed an action", player->id); printLog(DEBUG);
 
@@ -509,8 +610,7 @@ int handlePlayerAction(PlayerData *player) {
 
     int err = recv(player->socket, &idRequest, sizeof(TIdReq), MSG_PEEK);
     if (err <= 0) {
-        playerDisconnected(player);
-        return 0;
+        return 1;
     }
     else {
         if (idRequest == PARTIE) {
@@ -536,7 +636,7 @@ int handlePlayerAction(PlayerData *player) {
             }
             else {
                 err = handlePlayingRequest(player);
-                if (err == 0) {
+                if (err == 0 || err == 3) {
                     return 0;
                 }
                 else if (err == 1) {
@@ -556,23 +656,31 @@ int handlePlayerAction(PlayerData *player) {
         endAction(player, errorCode, TRICHE, PERDU, NULL);
     }
     else {
-        sendGameResponse(player, errorCode);
+        if (sendGameResponse(player, errorCode)) {
+            return 1;
+        }
     }
 
     return 0;
 }
 
 
-/*
-    Called in the main instance.
-    Handling the signal sent by the timer process when it ends.
-*/
+/**
+ * @brief Handles the timeout signal sent by the timer process
+ * @details Ends the current player action and announces his timeout
+ */
 void timerOutSignalHandler() {
     sprintf(logMessage, "Player '%s' timed out", currentPlayer->name); printLog(INFO);
     endAction(currentPlayer, ERR_COUP, TIMEOUT, PERDU, NULL);
 }
 
 
+/**
+ * The server's main function
+ * @param [in] argc The arguments number
+ * @param [in] argv The arguments list
+ * @return The termination error code
+ */
 int main(int argc, char** argv) {
     /*
         Server initializing part
@@ -640,13 +748,15 @@ int main(int argc, char** argv) {
         }
 
         if (FD_ISSET(socketServer, &readfs)) {  // New player connecting
-            handlePlayerConnection(socketServer, players); // TODO : handle too much players connecting
+            handlePlayerConnection(socketServer, players);
         }
 
         for (int i = 0; i < 2; i++) {
             if (players[i].socket != -1) {
                 if (FD_ISSET(players[i].socket, &readfs)) { // Action on player's socket
-                    handlePlayerAction(&players[i]);
+                    if (handlePlayerAction(&players[i]) && gameContinue) {
+                        playerDisconnected(&players[i]);
+                    }
                 }
             }
         }
