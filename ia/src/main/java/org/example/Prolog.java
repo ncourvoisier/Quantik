@@ -25,7 +25,8 @@ public class Prolog {
      * @return the query to make request to the prolog file
      */
     public Query consult() {
-        String file = System.getProperty("user.dir") + "/ia.pl";
+        //String file = System.getProperty("user.dir") + "/ia.pl";
+        String file = ClassLoader.getSystemResource("ia.pl").getPath();
         System.out.println(file);
         Query q1 = new Query("consult", new Term[] {new Atom(file)});
         System.out.println("Consult prolog file : " + (q1.hasSolution() ? "succeeded" : "failed")); //Si le fichier a pu etre lu
@@ -80,13 +81,17 @@ public class Prolog {
      */
     public int pionToInt(String pion) {
         switch (pion) {
-            case "c" :
+            case "cb" :
+            case "cn" :
                 return 0;
-            case "p" :
+            case "pb" :
+            case "pn" :
                 return 1;
-            case "s" :
+            case "sb" :
+            case "sn" :
                 return 2;
-            case "t" :
+            case "tb" :
+            case "tn" :
                 return 3;
             default :
                 return -1;
@@ -129,12 +134,13 @@ public class Prolog {
         java.util.Map<String,Term> solution;
         solution = q1.oneSolution();
 
-        System.out.println(str);
+//        System.out.println(str);
 
         int[] res = new int[3];
         try {
             res[0] = solution.get("L").intValue();
             res[1] = solution.get("C").intValue();
+            System.out.println("PPPP " + solution.get("P"));
             res[2] = pionToInt(solution.get("P").toString());
             g.removePionJouer(solution.get("P").toString());
         } catch (Exception p) {

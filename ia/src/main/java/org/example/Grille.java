@@ -19,13 +19,19 @@ public class Grille {
     private String[] pionRestant;
 
     /**
+     * The color during the game
+     */
+    private int color;
+
+    /**
      * The constructor of the class
      */
-    Grille () {
+    Grille (int color) {
+        this.color = color;
         this.grille = new String[4][4];
         intitalizeGrille(this.grille);
         this.pionRestant = new String[8];
-        initializePionRestant(this.pionRestant);
+        initializePionRestant(this.pionRestant, this.color);
     }
 
     /**
@@ -33,15 +39,26 @@ public class Grille {
      *
      * @param p the array to initialize
      */
-    private void initializePionRestant(String[] p) {
-        p[0] = "c";
-        p[1] = "c";
-        p[2] = "p";
-        p[3] = "p";
-        p[4] = "s";
-        p[5] = "s";
-        p[6] = "t";
-        p[7] = "t";
+    private void initializePionRestant(String[] p, int couleur) {
+        if (couleur == 1) { // noir
+            p[0] = "cn";
+            p[1] = "cn";
+            p[2] = "pn";
+            p[3] = "pn";
+            p[4] = "sn";
+            p[5] = "sn";
+            p[6] = "tn";
+            p[7] = "tn";
+        } else { // blanc
+            p[0] = "cb";
+            p[1] = "cb";
+            p[2] = "pb";
+            p[3] = "pb";
+            p[4] = "sb";
+            p[5] = "sb";
+            p[6] = "tb";
+            p[7] = "tb";
+        }
     }
 
     /**
@@ -50,7 +67,7 @@ public class Grille {
     public void reInitGrille(){
         intitalizeGrille(this.grille);
         this.pionRestant = new String[8];
-        initializePionRestant(this.pionRestant);
+        initializePionRestant(this.pionRestant, this.color);
     }
 
     /**

@@ -384,6 +384,87 @@ verifAll(Grid,L,C,P) :-
     ),
     !.
 
+% Transform a pawn in opponent pawn
+%
+% P : the pawn to transform
+% O : return the opponent pawn
+pawnToOpponent(P,O) :-
+    (P = cn ->
+        O = cb
+    ;
+        write("")
+    ),
+    (P = pn ->
+        O = pb
+    ;
+        write("")
+    ),
+    (P = sn ->
+        O = sb
+    ;
+        write("")
+    ),
+    (P = tn ->
+        O = tb
+    ;
+        write("")
+    ),
+    (P = cb ->
+        O = cn
+    ;
+        write("")
+    ),
+    (P = pb ->
+        O = pn
+    ;
+        write("")
+    ),
+    (P = sb ->
+        O = sn
+    ;
+        write("")
+    ),
+    (P = tb ->
+        O = tn
+    ;
+        write("")
+    ).
+
+% This function checks validity move in grid
+%
+% grid : the quantik grid
+% L : the line position
+% C : the column position
+% P : the pawn selected
+verifAllDupli(Grid, L,C,P) :-
+    pawnToOpponent(P,T),
+    (verifAll(Grid,L,C,T) ->
+        write("")
+    ;
+        false
+    ),
+    (verifAll(Grid,L,C,P) ->
+        write("")
+    ;
+        true
+    ).
+
+verifPawn(Grid, L,C,P) :-
+    pawnToOpponent(P,T),
+    (verifAll(Grid,L,C,T) ->
+        write("")
+    ;
+        false
+    ),
+    (verifAll(Grid,L,C,P) ->
+        write("")
+    ;
+        false
+    ).
+
+
+
+
 % This function selects a pawn in avialable list of pawn
 %
 % PionRestant : the list of avialable pawn

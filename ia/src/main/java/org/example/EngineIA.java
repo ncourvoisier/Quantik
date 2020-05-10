@@ -6,7 +6,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
 
-import java.util.Scanner;
 
 /**
  * The class EngineIA make a connection with the player (file player.c)
@@ -14,14 +13,46 @@ import java.util.Scanner;
  */
 public class EngineIA {
 
+    /**
+     * Return the opponent color
+     *
+     * @param couleur color of current player
+     * @return the opponent color
+     */
+    public static int opponentCouleur(int couleur) {
+        if (couleur == 1) {
+            return 0;
+        }
+        if (couleur == 0) {
+            return 1;
+        }
+        return -1;
+    }
 
-    public static String intToStringPawn(int p) {
-        switch(p) {
-            case 0 : return "c";
-            case 1 : return "p";
-            case 2 : return "s";
-            case 3 : return "t";
-            default: return "";
+    /**
+     * Transform an int in pawn
+     *
+     * @param p : the pawn to transform
+     * @param couleur : if the player is black or white
+     * @return the spawn returned
+     */
+    public static String intToStringPawn(int p, int couleur) {
+        if (couleur == 1) { // noir
+            switch(p) {
+                case 0 : return "cn";
+                case 1 : return "pn";
+                case 2 : return "sn";
+                case 3 : return "tn";
+                default: return "";
+            }
+        } else { // blanc
+            switch(p) {
+                case 0 : return "cb";
+                case 1 : return "pb";
+                case 2 : return "sb";
+                case 3 : return "tb";
+                default: return "";
+            }
         }
     }
 
@@ -45,7 +76,7 @@ public class EngineIA {
      * @return an error message if he are an error or 0 if all is normal
      * @throws Exception the exception to catch error with recv and send function
      */
-    public static int playSecond(Grille g, int i, DataInputStream DIS, DataOutputStream DOS) throws Exception {
+    public static int playSecond(Grille g, int i, DataInputStream DIS, DataOutputStream DOS, int couleur) throws Exception {
         int xSend;
         int ySend;
         int pSend;
@@ -55,6 +86,7 @@ public class EngineIA {
         int pRecv;
         int cRecv;
         int continuerPartie = 0;
+        int colorOpponent = opponentCouleur(couleur);
 
         System.out.println("-------------------------------------------------------------");
         System.out.println("\n\nPlaySecond Iteration " + i);
@@ -74,7 +106,7 @@ public class EngineIA {
             return -1;
         }
 
-        g.addPawnInGrille(xRecv, yRecv, intToStringPawn(pRecv));
+        g.addPawnInGrille(xRecv, yRecv, intToStringPawn(pRecv, colorOpponent));
 
         System.out.println("The opponent played :");
         g.printGrille();
@@ -93,7 +125,7 @@ public class EngineIA {
             xSend = r[0];
             ySend = r[1];
             pSend = r[2];
-            g.addPawnInGrille(xSend, ySend, intToStringPawn(pSend));
+            g.addPawnInGrille(xSend, ySend, intToStringPawn(pSend, couleur));
             if (g.isFinalMove()) {
                 cSend = 1;
             }
@@ -122,9 +154,7 @@ public class EngineIA {
      * @return an error message if he are an error or 0 if all is normal
      * @throws Exception the exception to catch error with recv and send function
      */
-    public static int playFirst(Grille g, int i, DataInputStream DIS, DataOutputStream DOS) throws Exception {
-
-        Scanner sc = new Scanner(System.in);
+    public static int playFirst(Grille g, int i, DataInputStream DIS, DataOutputStream DOS, int couleur) throws Exception {
         int xSend;
         int ySend;
         int pSend;
@@ -134,6 +164,7 @@ public class EngineIA {
         int pRecv;
         int cRecv;
         int continuerPartie = 0;
+        int colorOpponent = opponentCouleur(couleur);
 
         System.out.println("-------------------------------------------------------------");
         System.out.println("\n\nPlayFirst Iteration " + i);
@@ -154,7 +185,7 @@ public class EngineIA {
             xSend = r[0];
             ySend = r[1];
             pSend = r[2];
-            g.addPawnInGrille(xSend, ySend, intToStringPawn(pSend));
+            g.addPawnInGrille(xSend, ySend, intToStringPawn(pSend, couleur));
             if (g.isFinalMove()) {
                 cSend = 1;
             }
@@ -185,7 +216,7 @@ public class EngineIA {
             return -1;
         }
 
-        g.addPawnInGrille(xRecv, yRecv, intToStringPawn(pRecv));
+        g.addPawnInGrille(xRecv, yRecv, intToStringPawn(pRecv, colorOpponent));
 
         System.out.println("The opponent played :");
         g.printGrille();
@@ -204,8 +235,6 @@ public class EngineIA {
 
         int port = Integer.parseInt(args[1]);
         String addr = args[0];
-        Grille g = new Grille();
-        g.printGrille();
 
         Socket sock = null;
 
@@ -215,19 +244,22 @@ public class EngineIA {
             DataOutputStream DOS = new DataOutputStream(sock.getOutputStream());
 
             int playFirst = DIS.readInt();
+            Grille g = new Grille(playFirst);
+            g.printGrille();
+
             int end = 0;
             int i = 0;
 
             do {
                 i++;
                 if (playFirst == 0) {
-                    end = playFirst(g, i , DIS, DOS);
+                    end = playFirst(g, i , DIS, DOS, playFirst);
                     if (end != 0) {
                         break;
                     }
                 }
                 if (playFirst != 0) {
-                    end = playSecond(g, i, DIS, DOS);
+                    end = playSecond(g, i, DIS, DOS, playFirst);
                     if (end != 0) {
                         break;
                     }
@@ -242,13 +274,13 @@ public class EngineIA {
             do {
                 i++;
                 if (playFirst == 0) {
-                    end = playSecond(g, i, DIS, DOS);
+                    end = playSecond(g, i, DIS, DOS, playFirst);
                     if (end != 0) {
                         break;
                     }
                 }
                 if (playFirst != 0) {
-                    end = playFirst(g, i , DIS, DOS);
+                    end = playFirst(g, i , DIS, DOS, playFirst);
                     if (end != 0) {
                         break;
                     }
