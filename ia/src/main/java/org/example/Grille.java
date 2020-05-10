@@ -261,16 +261,16 @@ public class Grille {
                 if(grille[i][j] != "0") {
                     gagne++;
                 }
-                if(grille[i][j] == "c") {
+                if(grille[i][j].equals("cn") || grille[i][j].equals("cb")) {
                     C = true;
                 }
-                if(grille[i][j] == "p") {
+                if(grille[i][j].equals("pn") || grille[i][j].equals("pb")) {
                     P = true;
                 }
-                if(grille[i][j] == "s") {
+                if(grille[i][j].equals("sn") || grille[i][j].equals("sb")) {
                     S = true;
                 }
-                if(grille[i][j] == "t") {
+                if(grille[i][j].equals("tn") || grille[i][j].equals("tb")) {
                     T = true;
                 }
             }
@@ -298,20 +298,19 @@ public class Grille {
         // Check if one column is final
         for (int i = 0; i < nbLigne; i++) {
             for (int j = 0; j < nbColonne; j++) {
-                //System.out.println(grille[i][j] +"  ");
                 if(!grille[i][j].equals("0")) {
                     gagne++;
                 }
-                if(grille[i][j].equals("c")) {
+                if(grille[i][j].equals("cn") || grille[i][j].equals("cb")) {
                     C = true;
                 }
-                if(grille[i][j].equals("p")) {
+                if(grille[i][j].equals("pn") || grille[i][j].equals("pb")) {
                     P = true;
                 }
-                if(grille[i][j].equals("s")) {
+                if(grille[i][j].equals("sn") || grille[i][j].equals("sb")) {
                     S = true;
                 }
-                if(grille[i][j].equals("t")) {
+                if(grille[i][j].equals("tn") || grille[i][j].equals("tb")) {
                     T = true;
                 }
             }
@@ -330,19 +329,19 @@ public class Grille {
         // Check if one line is final
         for (int i = 0; i < nbLigne; i++) {
             for (int j = 0; j < nbColonne; j++) {
-                if(grille[j][i] != "0") {
+                if(!grille[j][i].equals("0")) {
                     gagne++;
                 }
-                if(grille[j][i] == "c") {
+                if(grille[j][i].equals("cn") || grille[j][i].equals("cb")) {
                     C = true;
                 }
-                if(grille[j][i] == "p") {
+                if(grille[j][i].equals("pn") || grille[j][i].equals("pb")) {
                     P = true;
                 }
-                if(grille[j][i] == "s") {
+                if(grille[j][i].equals("sn") || grille[j][i].equals("sb")) {
                     S = true;
                 }
-                if(grille[j][i] == "t") {
+                if(grille[j][i].equals("tn") || grille[j][i].equals("tb")) {
                     T = true;
                 }
             }
