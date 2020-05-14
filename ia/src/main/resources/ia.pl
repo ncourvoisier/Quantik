@@ -214,40 +214,37 @@ jouerCoup(Grid,Ligne,Colonne,Pion,ListePion,NvListePion) :-
 
 %%%%%%%%%%%%%%%%%%%% Heuristique %%%%%%%%%%%%%%%%%%%%
 
-collectePions([], Trouve, Poids):-
-    length(Trouve, Poids),!.
-collectePions([P|_], Trouve, -1):-
-    member(P, Trouve),!.
-collectePions([P|Liste], Trouve, Poids):-
-    \+ P is 0,
-    append([P],Trouve,NvTrouve),
-    collectePions(Liste, NvTrouve, Poids),!.
-collectePions([_|Liste], Trouve, Poids):-
-    collectePions(Liste, Trouve, Poids).
-
-generePoids(Liste, Poids):-
-    collectePions(Liste, [], Poids).
-
 % Returns the number of pawns found on a line
 %
 % Grid : the Quantik game board
 % LigneNb : the number of the line
 % Poids : the returned number of pawns on the line
+poidsLigne([], 0):-
+    !.
+poidsLigne([L0|Ligne], Poids):-
+    L0 \= 0,
+    poidsLigne(Ligne, P),
+    Poids is P + 1,!.
+poidsLigne([_|Ligne], Poids):-
+    poidsLigne(Ligne, Poids).
 poidsLigne(Grid, LigneNb, Poids):-
     nth0(LigneNb,Grid,Ligne),
-    generePoids(Ligne, Poids).
+    poidsLigne(Ligne, Poids).
 
 % Returns the number of pawns found on a column
 %
 % Grid : the Quantik game board
 % ColonneNb : the number of the column
 % Poids : the returned number of pawns on the column
-poidsColonne([L0,L1,L2,L3], ColonneNb, Poids):-
-    nth0(ColonneNb,L0,P0),
-    nth0(ColonneNb,L1,P1),
-    nth0(ColonneNb,L2,P2),
-    nth0(ColonneNb,L3,P3),
-    generePoids([P0,P1,P2,P3], Poids).
+poidsColonne([], _, 0):-
+    !.
+poidsColonne([Ligne|Grid], ColonneNb, Poids):-
+    nth0(ColonneNb, Ligne, Val),
+    Val \= 0,
+    poidsColonne(Grid, ColonneNb, P),
+    Poids is P + 1,!.
+poidsColonne([_|Grid], ColonneNb, Poids):-
+    poidsColonne(Grid, ColonneNb, Poids),!.
 
 % Returns the number of pawns found in the square the given cell is in
 %
@@ -255,6 +252,9 @@ poidsColonne([L0,L1,L2,L3], ColonneNb, Poids):-
 % LigneNb : the number of the line the cell belongs to
 % ColonneNb : the number of the column the cell belongs to
 % Poids : the returned number of pawns in the square
+differentZero(0, 0):-!.
+differentZero(_,1).
+comportePion(_, _, _, 0).
 poidsCarree(Grid, ColonneNb, LigneNb, Poids):-
     mod2Inf(ColonneNb, X),
     mod2Inf(LigneNb, Y),
@@ -264,7 +264,11 @@ poidsCarree(Grid, ColonneNb, LigneNb, Poids):-
     retournePionDansCase(Grid, X, Y1, V3),
     Y1 is Y + 1,
     retournePionDansCase(Grid, X1, Y1, V4),
-    generePoids([V1,V2,V3,V4], Poids),!.
+    differentZero(V1,P1),
+    differentZero(V2,P2),
+    differentZero(V3,P3),
+    differentZero(V4,P4),
+    Poids is P1 + P2 + P3 + P4,!.
 
 % Gives a number between 0 and 3 to each square of the game
 %
@@ -318,28 +322,36 @@ poidsMapping(Grid, PoidsMap):-
     PoidsMap = [[_,_,_,_],[_,_,_,_],[_,_,_,_],[_,_,_,_]],
     poidsMappingApply(PoidsMap, Poids, 0, 0),!.
 
-apparieCase(-1, [ListePM1,ListeP0,ListeP1,ListeP2,ListeP3], [[[CurrL,CurrC]|ListePM1],ListeP0,ListeP1,ListeP2,ListeP3], CurrL, CurrC).
-apparieCase(0, [ListePM1,ListeP0,ListeP1,ListeP2,ListeP3], [ListePM1,[[CurrL,CurrC]|ListeP0],ListeP1,ListeP2,ListeP3], CurrL, CurrC).
-apparieCase(1, [ListePM1,ListeP0,ListeP1,ListeP2,ListeP3], [ListePM1,ListeP0,[[CurrL,CurrC]|ListeP1],ListeP2,ListeP3], CurrL, CurrC).
-apparieCase(2, [ListePM1,ListeP0,ListeP1,ListeP2,ListeP3], [ListePM1,ListeP0,ListeP1,[[CurrL,CurrC]|ListeP2],ListeP3], CurrL, CurrC).
-apparieCase(3, [ListePM1,ListeP0,ListeP1,ListeP2,ListeP3], [ListePM1,ListeP0,ListeP1,ListeP2,[[CurrL,CurrC]|ListeP3]], CurrL, CurrC).
+apparieCase(0, [ListeP0,ListeP1,ListeP2,ListeP3], [[[CurrL,CurrC]|ListeP0],ListeP1,ListeP2,ListeP3], CurrL, CurrC).
+apparieCase(1, [ListeP0,ListeP1,ListeP2,ListeP3], [ListeP0,[[CurrL,CurrC]|ListeP1],ListeP2,ListeP3], CurrL, CurrC).
+apparieCase(2, [ListeP0,ListeP1,ListeP2,ListeP3], [ListeP0,ListeP1,[[CurrL,CurrC]|ListeP2],ListeP3], CurrL, CurrC).
+apparieCase(3, [ListeP0,ListeP1,ListeP2,ListeP3], [ListeP0,ListeP1,ListeP2,[[CurrL,CurrC]|ListeP3]], CurrL, CurrC).
 
-prioriteLigne(_, [], PrioListes, PrioListes, _, _):-!.
-prioriteLigne(Grid, [Case|Ligne], PrioListes, NvPrioListes, CurrL, CurrC):-
-    retournePionDansCase(Grid, CurrL, CurrC, Pion),
-    Pion is 0,
+prioriteLigne([], PrioListes, PrioListes, _, _):-!.
+prioriteLigne([Case|Ligne], PrioListes, NvPrioListes, CurrL, CurrC):-
     apparieCase(Case, PrioListes, NvPrioListesApresAppariement, CurrL, CurrC),
     NextCurrC is CurrC + 1,
-    prioriteLigne(Grid, Ligne, NvPrioListesApresAppariement, NvPrioListes, CurrL, NextCurrC),!.
-prioriteLigne(Grid, [_|Ligne], PrioListes, NvPrioListes, CurrL, CurrC):-
-    NextCurrC is CurrC + 1,
-    prioriteLigne(Grid, Ligne, PrioListes, NvPrioListes, CurrL, NextCurrC),!.
+    prioriteLigne(Ligne, NvPrioListesApresAppariement, NvPrioListes, CurrL, NextCurrC).
 
-prioriteGroupes(_, [], PrioListes, PrioListes, _, _):-!.
-prioriteGroupes(Grid, [Ligne|PoidsMap], PrioListes, NvPrioListes, CurrL, CurrC):-
-    prioriteLigne(Grid, Ligne, PrioListes, NvPrioListesApresLigne, CurrL, CurrC),
+prioriteListe([], PrioListes, PrioListes, _, _):-!.
+prioriteListe([Ligne|PoidsMap], PrioListes, NvPrioListes, CurrL, CurrC):-
+    prioriteLigne(Ligne, PrioListes, NvPrioListesApresLigne, CurrL, CurrC),
     NextCurrL is CurrL + 1,
-    prioriteGroupes(Grid, PoidsMap, NvPrioListesApresLigne, NvPrioListes, NextCurrL, CurrC).
+    prioriteListe(PoidsMap, NvPrioListesApresLigne, NvPrioListes, NextCurrL, CurrC).
+
+flatten_level2(_, [], Flat, Flat).
+flatten_level2(Grid, [[L,C]|Liste], Flat, NvFlat):-
+    retournePionDansCase(Grid, L, C, Val),
+    Val \= 0,
+    flatten_level2(Grid, Liste, Flat, NvFlat).
+flatten_level2(Grid, [Elem|Liste], Flat, NvFlat):-
+    append(Flat, [Elem], NvFlatPlusElem),
+    flatten_level2(Grid, Liste, NvFlatPlusElem, NvFlat).
+
+flatten_level1(_, [], Flat, Flat):-!.
+flatten_level1(Grid, [Liste|Q], Flat, NvFlat):-
+    flatten_level2(Grid, Liste, Flat, NvFlatApr2),
+    flatten_level1(Grid, Q, NvFlatApr2, NvFlat),!.
 
 % Takes a board and generates a list of coordinates pairs, those are empty cells
 % in the board given by priority order, the first cell in the list is the one
@@ -347,9 +359,10 @@ prioriteGroupes(Grid, [Ligne|PoidsMap], PrioListes, NvPrioListes, CurrL, CurrC):
 %
 % Grid : the Quantik game board
 % Liste : the returned coordinates pairs list
-prioriteGroupes(Grid, Groupes):-
+prioriteListe(Grid, Liste):-
     poidsMapping(Grid, PoidsMap),
-    prioriteGroupes(Grid, PoidsMap, [[],[],[],[],[]], Groupes, 0, 0).
+    prioriteListe(PoidsMap, [[],[],[],[]], [ListeP0, ListeP1, ListeP2, ListeP3], 0, 0),
+    flatten_level1(Grid, [ListeP3,ListeP1,ListeP0,ListeP2], [], Liste).
 
 % This function checks if the move is valid
 %
@@ -440,10 +453,10 @@ testTousLesPions(Grid,[P1|PionRestant],L1,C1,L,C,P) :-
 % L : return the line of the move
 % C : return the column of the mov
 % P : return the pawn of the mov
-% jouerCoupHeuristique(Grid, PionRestant, L,C,P) :-
-%    prioriteListe(Grid, Res),
-%    write(Res),
-%    jouerPosition(Grid,Res,PionRestant,L,C,P).
+jouerCoupHeuristique(Grid, PionRestant, L,C,P) :-
+    prioriteListe(Grid, Res),
+    write(Res),
+    jouerPosition(Grid,Res,PionRestant,L,C,P).
 
 
 % Les tests unitaires :
