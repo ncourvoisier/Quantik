@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
 public class PrologTest {
 
     Prolog p = new Prolog();
-    Grille g = new Grille(0);
+    Grille g = new Grille();
 
     @Test
     public void testConsult() {
@@ -45,15 +45,22 @@ public class PrologTest {
 
     @Test
     public void testPionToInt() {
-        assertEquals(0,p.pionToInt("cb"));
-        assertEquals(0,p.pionToInt("cn"));
-        assertEquals(1,p.pionToInt("pb"));
-        assertEquals(1,p.pionToInt("pn"));
-        assertEquals(2,p.pionToInt("sb"));
-        assertEquals(2,p.pionToInt("sn"));
-        assertEquals(3,p.pionToInt("tb"));
-        assertEquals(3,p.pionToInt("tn"));
+        assertEquals(0,p.pionToInt("c"));
+        assertEquals(1,p.pionToInt("p"));
+        assertEquals(2,p.pionToInt("s"));
+        assertEquals(3,p.pionToInt("t"));
         assertEquals(-1,p.pionToInt("x"));
+    }
+
+    @Test
+    public void testJouerCoup() {
+        int[] r;
+        for (int i = 0; i < 7; i++) {
+            r = p.jouerCoup(g);
+            assertTrue(r[0] > -1 && r[0] < 4);
+            assertTrue(r[1] > -1 && r[1] < 4);
+            assertTrue(r[2] > -1 && r[2] < 4);
+        }
     }
 
     @Test
@@ -68,15 +75,14 @@ public class PrologTest {
         int[] r = p.jouerCoupHeuristique(g);
         assertEquals(r[0],3);
         assertEquals(r[1],3);
-        System.out.println(r[2]);
         assertTrue(r[2] > -1 && r[2] < 4);
     }
 
     @Test
     public void testHeuristique2() {
-        g.addPawnInGrille(0,0,"cb");
-        g.addPawnInGrille(0,1,"pb");
-        g.addPawnInGrille(0,2,"sb");
+        g.addPawnInGrille(0,0,"c");
+        g.addPawnInGrille(0,1,"p");
+        g.addPawnInGrille(0,2,"s");
 
         int[] r = p.jouerCoupHeuristique(g);
         assertEquals(0,r[0]);
@@ -86,9 +92,9 @@ public class PrologTest {
 
     @Test
     public void testHeuristique3() {
-        g.addPawnInGrille(0,0,"cb");
-        g.addPawnInGrille(1,0,"pb");
-        g.addPawnInGrille(2,0,"sb");
+        g.addPawnInGrille(0,0,"c");
+        g.addPawnInGrille(1,0,"p");
+        g.addPawnInGrille(2,0,"s");
 
         int[] r = p.jouerCoupHeuristique(g);
         assertEquals(3,r[0]);
@@ -98,13 +104,37 @@ public class PrologTest {
 
     @Test
     public void testHeuristique4() {
-        g.addPawnInGrille(0,0,"cb");
-        g.addPawnInGrille(0,1,"pb");
-        g.addPawnInGrille(1,0,"sb");
+        g.addPawnInGrille(0,0,"c");
+        g.addPawnInGrille(0,1,"p");
+        g.addPawnInGrille(1,0,"s");
 
         int[] r = p.jouerCoupHeuristique(g);
         assertEquals(1,r[0]);
         assertEquals(1,r[1]);
         assertEquals(3,r[2]);
     }
+
+    @Test
+    public void testHeuristique5() {
+        g.addPawnInGrille(0,0,"c");
+        g.addPawnInGrille(0,1,"p");
+        g.addPawnInGrille(1,2,"s");
+        g.addPawnInGrille(1,3,"t");
+
+        g.addPawnInGrille(2,0,"s");
+        g.addPawnInGrille(2,1,"t");
+        g.addPawnInGrille(2,2,"c");
+        g.addPawnInGrille(2,3,"p");
+
+        try {
+            int[] r = p.jouerCoupHeuristique(g);
+            assertEquals(1,r[0]);
+            assertEquals(1,r[1]);
+            assertEquals(3,r[2]);
+        } catch (NullPointerException e) {
+            Assert.assertNull(e.getMessage());
+        }
+
+    }
+
 }
